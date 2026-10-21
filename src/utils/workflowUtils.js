@@ -11,7 +11,7 @@ function sanitizeWorkflowNodes(nodes, { keepBinaryAsReference = false } = {}) {
     if (node.type === "inputWorkflowNode") {
       for (const [key, value] of Object.entries(node.data.outputs || {})) {
         if (value?.kind === "text") {
-          outputs[key] = value;
+          outputs[key] = "";
         }
         else if (value?.kind === "binary" && keepBinaryAsReference) {
           const blobId = node.id + key

@@ -1,7 +1,7 @@
 import { Button, Box, CircularProgress, Typography, CardActions, TextField, Select, MenuItem } from '@mui/material';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   getAllTools,
   loadToolIndex,
@@ -31,6 +31,52 @@ const DevPage = () => {
   const [diffValue, setDiffValue] = useState({});
   const [selectedOutput, setSelectedOutput] = useState("");
 
+  const [inputPreviewValue, setInputPreviewValue] = useState({});
+  const [inputTruncated, setInputTruncated] = useState({});
+  const fileInputRef = useRef(null);
+
+  const MAX_PREVIEW_LINES = 1000;
+
+  function getInputPreview(text) {
+    const lines = text.split(/\r\n|\n|\r/);
+
+    return {
+      text: lines.slice(0, MAX_PREVIEW_LINES).join('\n'),
+      truncated: lines.length > MAX_PREVIEW_LINES,
+    };
+  }
+
+  async function handleFileUpload(event) {
+    const file = event.target.files?.[0];
+    if (!file || !selectedInput) return;
+
+    try {
+      const content = await file.text();
+      const preview = getInputPreview(content);
+
+      // Keep the FULL content for tool execution.
+      setInputValue((prev) => ({
+        ...prev,
+        [selectedInput]: makeTextDataValue(content),
+      }));
+
+      // Keep only the preview for rendering in the editor.
+      setInputPreviewValue((prev) => ({
+        ...prev,
+        [selectedInput]: makeTextDataValue(preview.text),
+      }));
+
+      setInputTruncated((prev) => ({
+        ...prev,
+        [selectedInput]: preview.truncated,
+      }));
+    } catch (error) {
+      console.error("Failed to read input file:", error);
+    } finally {
+      // Allow selecting the same file again.
+      event.target.value = "";
+    }
+  }
 
   async function runWorkflowWithAgent(flow, fileData, url) {
     const formData = new FormData();
@@ -125,7 +171,7 @@ const DevPage = () => {
     return getAllTools().filter((tool) => {
       return (
         tool.runtime.modes.includes("native") &&
-        !seenTools.includes(tool.name)
+        !seenTools.includes(tool.name) && tool.name.includes("(SEQTK)")
       );
     });
   }
@@ -152,6 +198,7 @@ const DevPage = () => {
       initialInputValues[input.name] = makeTextDataValue("");
     });
     setInputValue(initialInputValues);
+    setInputTruncated({});
     setSelectedInput(tool.io.inputs[0]?.name);
     console.log(tool.io.inputs[0]?.name)
 
@@ -476,66 +523,128 @@ const DevPage = () => {
           <Card variant="outlined">
             <CardContent>
               {selectedInput && (
-                <Box sx={{ display: "flex", flexDirection: "row", gap: 2 }}>
-                  <Select
-                    value={selectedInput}
-                    onChange={(e) => setSelectedInput(e.target.value)}
-                    displayEmpty
-                    fullWidth
-                    size="small"
-                  >
-                    {currentTool.io.inputs.map((input) => (
-                      <MenuItem key={input.name} value={input.name}>
-                        {input.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-
-                  <Select
-                    data-tour="example-input"
-                    value={""}
-                    onChange={(e) => {
-                      const example_input = getTypeExampleInput(e.target.value);
-                      if (example_input) {
-                        setInputValue((prev) => ({
-                          ...prev,
-                          [selectedInput]: makeTextDataValue(
-                            example_input
-                          ),
-                        }));
-                      }
+                <>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "row",
+                      gap: 2,
+                      alignItems: "center",
                     }}
-                    displayEmpty
-                    fullWidth
-                    size="small"
                   >
-                    <MenuItem value="" disabled>
-                      Select Example Format
-                    </MenuItem>
-                    {Array.from(new Set(currentTool.inputTypes)).map((format) => (
-                      <MenuItem key={format} value={format}>
-                        {format}
+                    <Select
+                      value={selectedInput}
+                      onChange={(e) => setSelectedInput(e.target.value)}
+                      displayEmpty
+                      fullWidth
+                      size="small"
+                    >
+                      {currentTool.io.inputs.map((input) => (
+                        <MenuItem key={input.name} value={input.name}>
+                          {input.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+
+                    <Select
+                      data-tour="example-input"
+                      value=""
+                      onChange={(e) => {
+                        const exampleInput = getTypeExampleInput(e.target.value);
+
+                        if (exampleInput) {
+                          const preview = getInputPreview(exampleInput);
+
+                          setInputValue((prev) => ({
+                            ...prev,
+                            [selectedInput]: makeTextDataValue(exampleInput),
+                          }));
+
+                          setInputPreviewValue((prev) => ({
+                            ...prev,
+                            [selectedInput]: makeTextDataValue(preview.text),
+                          }));
+
+                          setInputTruncated((prev) => ({
+                            ...prev,
+                            [selectedInput]: preview.truncated,
+                          }));
+                        }
+                      }}
+                      displayEmpty
+                      fullWidth
+                      size="small"
+                    >
+                      <MenuItem value="" disabled>
+                        Select Example Format
                       </MenuItem>
-                    ))}
-                  </Select>
-                </Box>
+
+                      {Array.from(new Set(currentTool.inputTypes)).map((format) => (
+                        <MenuItem key={format} value={format}>
+                          {format}
+                        </MenuItem>
+                      ))}
+                    </Select>
+
+                    <Button
+                      variant="outlined"
+                      onClick={() => fileInputRef.current?.click()}
+                      sx={{ whiteSpace: "nowrap" }}
+                    >
+                      Upload File
+                    </Button>
+
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      hidden
+                      onChange={handleFileUpload}
+                    />
+                  </Box>
+
+                  {inputTruncated[selectedInput] && (
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ display: "block", mt: 1 }}
+                    >
+                      Showing the first 1,000 lines. The complete file is retained
+                      and will be used when running the tool.
+                    </Typography>
+                  )}
+
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={8}
+                    variant="outlined"
+                    value={inputPreviewValue[selectedInput]?.data ?? ""}
+                    onChange={(event) => {
+                      const text = event.target.value;
+                      const preview = getInputPreview(text);
+
+                      setInputValue((prev) => ({
+                        ...prev,
+                        [selectedInput]: makeTextDataValue(text),
+                      }));
+
+                      setInputPreviewValue((prev) => ({
+                        ...prev,
+                        [selectedInput]: makeTextDataValue(preview.text),
+                      }));
+
+                      setInputTruncated((prev) => ({
+                        ...prev,
+                        [selectedInput]: preview.truncated,
+                      }));
+                    }}
+                    InputProps={{
+                      readOnly: !!inputTruncated[selectedInput],
+                    }}
+                    sx={{ mt: 1 }}
+                  />
+                </>
               )}
-              <TextField
-                fullWidth
-                multiline
-                rows={8}
-                variant="outlined"
-                value={inputValue[selectedInput]?.data ?? ''}
-                onChange={(event) => {
-                  setInputValue((prev) => ({
-                    ...prev,
-                    [selectedInput]: makeTextDataValue(
-                      event.target.value
-                    ),
-                  }));
-                }}
-                sx={{ mt: 1 }}
-              />
             </CardContent>
           </Card>
 
