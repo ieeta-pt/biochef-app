@@ -131,12 +131,26 @@ export function validateCatalogEntry(entry) {
   requireCatalog(entry.package, "Tool package is missing");
   requireCatalog(entry.version, "Tool version is missing");
   requireCatalog(entry.evidence?.bundle_json, "Tool bundle evidence digest is missing");
+  if (entry.runtime?.r) {
+    // An R operation runs a script against a package library under webR, so it
+    // carries those digests in place of a wasm binary's.
+    requireCatalog(!entry.runtime.wasm, "Tool declares both a WASM and an R runtime");
+    requireCatalog(
+      typeof entry.runtime.r.webr_version === "string" && /^\d+\.\d+\.\d+$/.test(entry.runtime.r.webr_version),
+      "Tool webR version is invalid",
+    );
+    for (const key of ["library_digest", "metadata_digest", "script_digest"]) {
+      requireCatalog(isSha256Digest(entry.runtime.r[key]), `Tool R ${key.replace("_", " ")} is invalid`);
+    }
+    return;
+  }
   requireCatalog(entry.runtime?.wasm?.wasm_digest, "Tool WASM digest is missing");
   requireCatalog(entry.runtime?.wasm?.js_digest, "Tool JS digest is missing");
   if ("data_digest" in entry.runtime.wasm) {
-    requireCatalog(
-      typeof entry.runtime.wasm.data_digest === "string" && /^sha256:[a-fA-F0-9]{64}$/.test(entry.runtime.wasm.data_digest),
-      "Tool data digest is invalid",
-    );
+    requireCatalog(isSha256Digest(entry.runtime.wasm.data_digest), "Tool data digest is invalid");
   }
+}
+
+function isSha256Digest(value) {
+  return typeof value === "string" && /^sha256:[a-fA-F0-9]{64}$/.test(value);
 }

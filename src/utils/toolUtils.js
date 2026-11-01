@@ -1,4 +1,5 @@
 import Aioli from "@biowasm/aioli";
+import RRuntime from "./rRuntime";
 import logger from "./logger";
 import { detectIsBinaryFile } from "./detectDataType";
 import { makeBinaryDataValue, makeTextDataValue } from './dataValue'
@@ -335,8 +336,10 @@ export async function loadTool(toolName) {
   const bundleLayer = findLayer(manifest, "application/vnd.biochef.bundle+json", "bundle.json");
 
   if (!bundleLayer) {
-    console.error(`No bundle.json layer found for ${repo}`);
-    return;
+    // false, not undefined: callers test `result == false`, so returning
+    // undefined here reads as a successful load and the tool is used anyway.
+    logger.error(`No bundle.json layer found for ${repo}`);
+    return false;
   }
 
   const bundleBytes = await fetchBlobBytes(base_url, repo, bundleLayer.digest, authorization, "application/vnd.biochef.bundle+json");
@@ -358,9 +361,7 @@ export async function loadTool(toolName) {
     bundle.id !== bundleEntry.id ||
     bundle.name !== bundleEntry.name ||
     bundle.version !== bundleEntry.version ||
-    bundle.runtime?.wasm?.wasm_digest !== bundleEntry.runtime.wasm.wasm_digest ||
-    bundle.runtime?.wasm?.js_digest !== bundleEntry.runtime.wasm.js_digest ||
-    bundle.runtime?.wasm?.data_digest !== bundleEntry.runtime.wasm.data_digest
+    !runtimeMatchesCatalog(bundle.runtime, bundleEntry.runtime)
   ) {
     logger.error(`Loaded bundle does not match verified catalog entry for ${repo}`);
     return false;
@@ -376,6 +377,26 @@ export async function loadTool(toolName) {
   toolMap.set(toolName, bundle);
 
   return true
+}
+
+// The digests the signed catalog vouches for, for whichever runtime the entry
+// declares. An R entry has no wasm block, so comparing only wasm digests would
+// read a property of undefined on every R operation.
+function runtimeMatchesCatalog(bundleRuntime, catalogRuntime) {
+  if (catalogRuntime?.r) {
+    return (
+      !bundleRuntime?.wasm &&
+      ["webr_version", "library_digest", "metadata_digest", "script_digest"].every(
+        (key) => bundleRuntime?.r?.[key] === catalogRuntime.r[key]
+      )
+    );
+  }
+  return (
+    !bundleRuntime?.r &&
+    bundleRuntime?.wasm?.wasm_digest === catalogRuntime?.wasm?.wasm_digest &&
+    bundleRuntime?.wasm?.js_digest === catalogRuntime?.wasm?.js_digest &&
+    bundleRuntime?.wasm?.data_digest === catalogRuntime?.wasm?.data_digest
+  );
 }
 
 async function generateBlob(url, type, authorization, expectedDigest) {
@@ -421,6 +442,48 @@ async function getToolBlobs(toolName) {
   }
 
   return { scriptUrl: jsBlob, runtimeFiles };
+}
+
+/** An operation runs under webR when its bundle carries an `r` runtime block. */
+export function isROperation(toolName) {
+  return Boolean(getTool(toolName)?.runtime?.r)
+}
+
+async function fetchVerifiedBytes(base_url, repo, digest, authorization) {
+  const bytes = await fetchBlobBytes(base_url, repo, digest, authorization, "application/octet-stream")
+  if (!bytes) throw new Error(`Failed to fetch ${digest} for ${repo}`)
+  await verifySha256Digest(bytes, digest, `${repo}@${digest}`)
+  return new Uint8Array(bytes)
+}
+
+/**
+ * Fetches what one R operation needs: the package library, its index, and the
+ * script, each checked against the digest its bundle records.
+ *
+ * Unlike the wasm path these are not turned into object URLs. The library has
+ * to be handed to webR as bytes so it can be inflated and mounted, and the
+ * script has to be handed over as source.
+ */
+async function getRToolBlobs(toolName, { withLibrary = true } = {}) {
+  const toolConfig = getTool(toolName)
+  const { authorization, base_url } = await getAuthorizationAndBaseUrl(toolConfig.repo)
+  const { library_digest, metadata_digest, script_digest } = toolConfig.runtime.r
+
+  const [library, metadataBytes, scriptBytes] = await Promise.all([
+    // Skipped when this library is already mounted. Every operation in a
+    // recipe ships the same library, and each lives in its own registry repo,
+    // so nothing below this would deduplicate the download.
+    withLibrary ? fetchVerifiedBytes(base_url, toolConfig.repo, library_digest, authorization) : null,
+    withLibrary ? fetchVerifiedBytes(base_url, toolConfig.repo, metadata_digest, authorization) : null,
+    fetchVerifiedBytes(base_url, toolConfig.repo, script_digest, authorization),
+  ])
+
+  const decoder = new TextDecoder("utf-8")
+  return {
+    library,
+    metadata: metadataBytes ? JSON.parse(decoder.decode(metadataBytes)) : null,
+    script: decoder.decode(scriptBytes),
+  }
 }
 
 async function aioliReadFileHelper(CLI, fileName) {
@@ -492,135 +555,196 @@ export async function runTools(
   // file system. The downloaded runtime files are reused across invocations.
   const toolBlobs = {}
 
+  // isROperation reads the bundle, which exists only once loadTool has run. An
+  // unloaded tool would answer "not R", be treated as an aioli tool, and fail
+  // dereferencing a wasm digest it has no bundle for. Checked before anything
+  // runs, so the message names the real problem.
   for (const invocation of toolInvocations) {
-    toolBlobs[invocation.toolName] ??= await getToolBlobs(invocation.toolName)
-    const { scriptUrl, runtimeFiles } = toolBlobs[invocation.toolName]
-    const CLI = await new Aioli([{
-      tool: invocation.toolName,
-      scriptUrl,
-      runtimeFiles,
-      loading: "lazy",
-    }], {
-      printInterleaved: false,
-      debug: false,
-    });
+    if (!getTool(invocation.toolName)?.runtime) {
+      throw new Error(`Tool ${invocation.toolName} was not loaded before running`)
+    }
+  }
 
-    try {
-      // 1. Prepare the inputs
-      const toolDefinition = getTool(invocation.toolName)
-      // Emscripten builds argv with stringToUTF8OnStack, which reads .length:
-      // a number (an untouched recipe default) silently becomes "".
-      let args = invocation.toolArguments.map(String)
-      let lastArgs = [] // arguments that must appear after all flagged arguments.
+  // R operations share one webR, started on first use. Booting it and mounting
+  // a package library cost far more than a tool's wasm, so unlike an aioli tool
+  // it is not started afresh per invocation; each invocation still gets file
+  // names of its own. Keyed by library digest, not by tool: every operation in
+  // a recipe ships the same library.
+  let R = null
+  const rLibraries = new Map()
+  const rScripts = new Map()
+  async function loadROperation(toolName) {
+    if (rScripts.has(toolName)) return rScripts.get(toolName)
 
-      for (const inputDefinition of toolDefinition.io.inputs) {
-        if (!invocation.inputs[inputDefinition.name]) continue
-        const { mode, value } = invocation.inputs[inputDefinition.name];
+    const { webr_version, library_digest } = getTool(toolName).runtime.r
+    const alreadyMounted = rLibraries.has(library_digest)
+    const { library, metadata, script } = await getRToolBlobs(toolName, { withLibrary: !alreadyMounted })
 
-        let inputFileName = undefined
-        let stdinValue = undefined
-
-        if (mode === "text") {
-          if (inputDefinition.mode === "file") {
-            inputFileName = `input-${invocation.uniqueId}-${inputDefinition.name}.txt`
-            const fileContent = value.kind === "binary" ? new Blob([value.data]) : value.data;
-            await CLI.mount({ name: inputFileName, data: fileContent })
-          }
-          else if (inputDefinition.mode === "stdin") {
-            stdinValue = value.data
-          }
-        }
-        else if (mode === "output") {
-          const [source, sourceOutput] = value
-          inputFileName = `${source}-${sourceOutput}.txt`
-          const sourceValue = outputs[source]?.[sourceOutput] ?? makeTextDataValue("")
-
-          if (inputDefinition.mode === "file") {
-            const fileContent = sourceValue.kind === "binary" ? new Blob([sourceValue.data]) : sourceValue.data;
-            await CLI.mount({ name: inputFileName, data: fileContent })
-          }
-          else if (inputDefinition.mode === "stdin") {
-            stdinValue = sourceValue.data
-          }
-        }
-
-        if (inputDefinition.mode === "file") {
-          if (inputDefinition.flag) {
-            args.push(inputDefinition.flag)
-            args.push(inputFileName)
-          }
-          else {
-            lastArgs.push(inputFileName)
-          }
-        }
-        else if (inputDefinition.mode === "stdin") {
-          CLI.stdin = stdinValue
-        }
-      };
-
-      for (const outputDefinition of toolDefinition.io.outputs) {
-        if (outputDefinition.mode !== "file" || outputDefinition.flag == undefined) continue
-
-        const outputTarget = outputDefinition.filename ?? `${invocation.uniqueId}-${outputDefinition.name}.txt`
-
-        if (outputDefinition.flag == "") {
-          lastArgs.push(outputTarget)
-        }
-        else {
-          args.push(outputDefinition.flag)
-          args.push(outputTarget)
-        }
+    if (!alreadyMounted) {
+      const image = {
+        mountPoint: `/lib-${rLibraries.size}`,
+        data: library,
+        metadata,
+        webrVersion: webr_version,
       }
-    
-      args = [...args, ...lastArgs]
-
-      // 2. Run the tool
-      const { stdout, stderr } = await CLI.exec(invocation.toolName, args)
-      errors[invocation.uniqueId] = [stderr]
-
-      logger.log("[runMultipleTools]", invocation.toolName, {
-        args,
-        stdout,
-        stderr,
-      });
-    
-      // Artificial delay for testing purposes
-      // const delay = 1000;
-      // await new Promise(resolve => setTimeout(resolve, delay));
-
-      // 3. Save the results; the invocations that use them mount them themselves
-      for (const outputDefinition of toolDefinition.io.outputs) {
-        let result
-
-        if (outputDefinition.mode === "stdout") {
-          result = makeTextDataValue(stdout)
-        }
-        else if (outputDefinition.mode === "file") {
-          const fileToRead = outputDefinition.filename ?? `${invocation.uniqueId}-${outputDefinition.name}.txt`
-
-          result = await aioliReadFileHelper(CLI, fileToRead)
-          if (!result) {
-            // TODO maybe have a proper way to handle this
-            result = makeTextDataValue("")
-            errors[invocation.uniqueId].push(`Output "${outputDefinition.name}" did not produce the expected file "${fileToRead}"`)
-          }
-        }
-
-        outputs[invocation.uniqueId] ??= {};
-        outputs[invocation.uniqueId][outputDefinition.name] = result;
-      }
-
-    } finally {
-      // The worker holds the module and its heap; nothing reads it after this.
-      try {
-        await CLI.close()
-      } catch (err) {
-        logger.warn("[runMultipleTools] Failed to close the Aioli worker", err)
-      }
+      if (!R) R = await RRuntime.create({ libraryImages: [image], webrVersion: webr_version })
+      else await R.mountLibrary(image)
+      rLibraries.set(library_digest, image.mountPoint)
     }
 
-    // call the callback function after invocation is done
-    onToolFinished(invocation.uniqueId, outputs[invocation.uniqueId], errors[invocation.uniqueId])
+    rScripts.set(toolName, script)
+    return script
+  }
+
+  try {
+    for (const invocation of toolInvocations) {
+      const isR = isROperation(invocation.toolName)
+      const rScript = isR ? await loadROperation(invocation.toolName) : null
+      let runtime = R
+      if (!isR) {
+        toolBlobs[invocation.toolName] ??= await getToolBlobs(invocation.toolName)
+        const { scriptUrl, runtimeFiles } = toolBlobs[invocation.toolName]
+        runtime = await new Aioli([{
+          tool: invocation.toolName,
+          scriptUrl,
+          runtimeFiles,
+          loading: "lazy",
+        }], {
+          printInterleaved: false,
+          debug: false,
+        });
+      }
+
+      try {
+        // 1. Prepare the inputs
+        const toolDefinition = getTool(invocation.toolName)
+        // Emscripten builds argv with stringToUTF8OnStack, which reads .length:
+        // a number (an untouched recipe default) silently becomes "".
+        let args = invocation.toolArguments.map(String)
+        let lastArgs = [] // arguments that must appear after all flagged arguments.
+
+        for (const inputDefinition of toolDefinition.io.inputs) {
+          if (!invocation.inputs[inputDefinition.name]) continue
+          const { mode, value } = invocation.inputs[inputDefinition.name];
+
+          let inputFileName = undefined
+          let stdinValue = undefined
+
+          if (mode === "text") {
+            if (inputDefinition.mode === "file") {
+              inputFileName = `input-${invocation.uniqueId}-${inputDefinition.name}.txt`
+              const fileContent = value.kind === "binary" ? new Blob([value.data]) : value.data;
+              await runtime.mount({ name: inputFileName, data: fileContent })
+            }
+            else if (inputDefinition.mode === "stdin") {
+              stdinValue = value.data
+            }
+          }
+          else if (mode === "output") {
+            const [source, sourceOutput] = value
+            inputFileName = `${source}-${sourceOutput}.txt`
+            const sourceValue = outputs[source]?.[sourceOutput] ?? makeTextDataValue("")
+
+            if (inputDefinition.mode === "file") {
+              const fileContent = sourceValue.kind === "binary" ? new Blob([sourceValue.data]) : sourceValue.data;
+              await runtime.mount({ name: inputFileName, data: fileContent })
+            }
+            else if (inputDefinition.mode === "stdin") {
+              stdinValue = sourceValue.data
+            }
+          }
+
+          if (inputDefinition.mode === "file") {
+            if (inputDefinition.flag) {
+              args.push(inputDefinition.flag)
+              args.push(inputFileName)
+            }
+            else {
+              lastArgs.push(inputFileName)
+            }
+          }
+          else if (inputDefinition.mode === "stdin") {
+            runtime.stdin = stdinValue
+          }
+        };
+
+        for (const outputDefinition of toolDefinition.io.outputs) {
+          if (outputDefinition.mode !== "file" || outputDefinition.flag == undefined) continue
+
+          const outputTarget = outputDefinition.filename ?? `${invocation.uniqueId}-${outputDefinition.name}.txt`
+
+          if (outputDefinition.flag == "") {
+            lastArgs.push(outputTarget)
+          }
+          else {
+            args.push(outputDefinition.flag)
+            args.push(outputTarget)
+          }
+        }
+    
+        args = [...args, ...lastArgs]
+
+        // 2. Run the tool. An R operation is a script rather than a binary, so
+        // it is the script source that is executed, with the same argument
+        // vector the recipe's io and parameters produced.
+        const { stdout, stderr } = await runtime.exec(isR ? rScript : invocation.toolName, args)
+        errors[invocation.uniqueId] = [stderr]
+
+        logger.log("[runMultipleTools]", invocation.toolName, {
+          args,
+          stdout,
+          stderr,
+        });
+    
+        // Artificial delay for testing purposes
+        // const delay = 1000;
+        // await new Promise(resolve => setTimeout(resolve, delay));
+
+        // 3. Save the results; the invocations that use them mount them themselves
+        for (const outputDefinition of toolDefinition.io.outputs) {
+          let result
+
+          if (outputDefinition.mode === "stdout") {
+            result = makeTextDataValue(stdout)
+          }
+          else if (outputDefinition.mode === "file") {
+            const fileToRead = outputDefinition.filename ?? `${invocation.uniqueId}-${outputDefinition.name}.txt`
+
+            result = await aioliReadFileHelper(runtime, fileToRead)
+            if (!result) {
+              // TODO maybe have a proper way to handle this
+              result = makeTextDataValue("")
+              errors[invocation.uniqueId].push(`Output "${outputDefinition.name}" did not produce the expected file "${fileToRead}"`)
+            }
+          }
+
+          outputs[invocation.uniqueId] ??= {};
+          outputs[invocation.uniqueId][outputDefinition.name] = result;
+        }
+
+      } finally {
+        // The worker holds the module and its heap; nothing reads it after this.
+        // webR is kept for the next R operation and closed after the run.
+        if (!isR) {
+          try {
+            await runtime.close()
+          } catch (err) {
+            logger.warn("[runMultipleTools] Failed to close the Aioli worker", err)
+          }
+        }
+      }
+
+      // call the callback function after invocation is done
+      onToolFinished(invocation.uniqueId, outputs[invocation.uniqueId], errors[invocation.uniqueId])
+    }
+  } finally {
+    if (R) {
+      try {
+        await R.close()
+      } catch (err) {
+        logger.warn("[runMultipleTools] Failed to close webR", err)
+      }
+    }
   }
 
   logger.log("[runMultipleTools] Results", outputs, errors);
