@@ -166,8 +166,67 @@ function validatePaf(content) {
       if (!/^-?\d+$/.test(fields[i])) return false;
     }
     if (!['+', '-'].includes(fields[4])) return false;
+    // A target written as a graph path (>s1<s2) makes the line GAF
+    if (/^[<>]/.test(fields[5])) return false;
   }
   return true;
+}
+
+function validateGaf(content) {
+  if (!content?.trim()) return false;
+
+  for (const line of content.trim().split('\n')) {
+    if (!line.trim()) continue;
+    const fields = line.split('\t');
+    // GAF keeps PAF's 12 mandatory columns; the target is either a graph
+    // path such as >s1<s2 or, for a stable rGFA sequence, a plain name
+    if (fields.length < 12) return false;
+    for (const i of [1, 2, 3, 6, 7, 8, 9, 10, 11]) {
+      if (!/^-?\d+$/.test(fields[i])) return false;
+    }
+    if (!['+', '-'].includes(fields[4])) return false;
+    if (/^[<>]/.test(fields[5]) && !/^([<>][^<>\s]+)+$/.test(fields[5])) return false;
+  }
+  return true;
+}
+
+function validateWig(content) {
+  if (!content?.trim()) return false;
+
+  const number = /^-?(\d+\.?\d*|\.\d+)([eE][-+]?\d+)?$/;
+  let mode = null;
+  let hasData = false;
+  for (const raw of content.trim().split(/\r?\n/)) {
+    const line = raw.trim();
+    if (!line || line.startsWith('track') || line.startsWith('browser')) continue;
+    // bigWigToWig writes a bedGraph-backed bigWig as commented sections
+    if (line.startsWith('#bedGraph section')) {
+      mode = 'bedGraph';
+      continue;
+    }
+    if (line.startsWith('#')) continue;
+    const fields = line.split(/\s+/);
+    if (fields[0] === 'variableStep') {
+      if (!fields.slice(1).some(f => f.startsWith('chrom='))) return false;
+      mode = 'variableStep';
+      continue;
+    }
+    if (fields[0] === 'fixedStep') {
+      const keys = new Set(fields.slice(1).map(f => f.split('=')[0]));
+      if (!['chrom', 'start', 'step'].every(k => keys.has(k))) return false;
+      mode = 'fixedStep';
+      continue;
+    }
+    let ok;
+    if (mode === 'variableStep') ok = fields.length === 2 && /^\d+$/.test(fields[0]) && number.test(fields[1]);
+    else if (mode === 'fixedStep') ok = fields.length === 1 && number.test(fields[0]);
+    else if (mode === 'bedGraph') ok = fields.length === 4 && /^\d+$/.test(fields[1]) && /^\d+$/.test(fields[2]) && number.test(fields[3]);
+    // Data before any declaration is not wiggle
+    else return false;
+    if (!ok) return false;
+    hasData = true;
+  }
+  return hasData;
 }
 
 function validateGfa(content) {
@@ -187,6 +246,22 @@ function validateGfa(content) {
     }
   }
   return hasSegment;
+}
+
+function validateRgfa(content) {
+  if (!validateGfa(content)) return false;
+
+  // rGFA is GFA whose every segment carries its stable sequence (SN), its
+  // offset on it (SO) and its rank (SR), as minigraph writes them
+  for (const line of content.trim().split('\n')) {
+    const fields = line.split('\t');
+    if (fields[0] !== 'S') continue;
+    const tags = fields.slice(3);
+    if (!(tags.some(t => /^SN:Z:\S+$/.test(t))
+      && tags.some(t => /^SO:i:\d+$/.test(t))
+      && tags.some(t => /^SR:i:\d+$/.test(t)))) return false;
+  }
+  return true;
 }
 
 function validateClustal(content) {
@@ -477,7 +552,10 @@ const validators = {
   gff: validateGff,
   gtf: validateGtf,
   paf: validatePaf,
+  gaf: validateGaf,
+  rgfa: validateRgfa,
   gfa: validateGfa,
+  wig: validateWig,
   clustal: validateClustal,
   snd: validateSnd,
   bigbed: validateBigBed,

@@ -19,7 +19,6 @@ import { alpha } from '@mui/material/styles';
 import { keyframes } from '@mui/system';
 import debounce from 'lodash.debounce';
 import React, { useContext, useEffect, useMemo, useState } from 'react';
-import { DataTypeContext } from '../contexts/DataTypeContext';
 import { NotificationContext } from '../contexts/NotificationContext';
 import { ValidationErrorsContext } from '../contexts/ValidationErrorsContext';
 import { TourContext } from '../contexts/TourContext';
@@ -30,7 +29,6 @@ import { isValidConnection } from '../utils/workflowUtils';
 const OperationsPanel = ({ onAddOperation, isWorkflowEmpty, isLoading, setIsLoading, insertAtIndex, setInsertAtIndex, addingATool, setAddingATool, filteredTools, setFilteredTools, selectedFiles, tabIndex, workflow, selectedNode }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedCategories, setExpandedCategories] = useState({});
-  const { dataType } = useContext(DataTypeContext);
   const showNotification = useContext(NotificationContext);
   const { validationErrors } = useContext(ValidationErrorsContext); // Access validation errors
   const { tourRegisterSteps, tourMoveNext } = useContext(TourContext);
