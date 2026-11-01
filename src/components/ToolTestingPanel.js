@@ -19,7 +19,6 @@ import {
 } from '@mui/material';
 import React, { useContext, useEffect, useState } from 'react';
 import { getTool } from '../utils/toolUtils';
-import { DataTypeContext } from '../contexts/DataTypeContext';
 import { NotificationContext } from '../contexts/NotificationContext';
 import { runTools } from '../utils/toolUtils';
 import { detectDataType } from '../utils/detectDataType';
@@ -33,7 +32,6 @@ const ToolTestingPanel = ({ tool, inputData, setOutputData, setIsLoading }) => {
     const [parameters, setParameters] = useState({});   // To store parameters
     const [helpMessages, setHelpMessages] = useState({}); // To store help messages
     const [toolParameterFiles, setToolParameterFiles] = useState({}); // To store tool parameter files
-    const { validateData } = useContext(DataTypeContext);
     const { tourRegisterSteps, tourStart, tourMoveNext, tourIsActive } = useContext(TourContext);
 
     // Find tool configuration and supported input formats
@@ -113,7 +111,7 @@ const ToolTestingPanel = ({ tool, inputData, setOutputData, setIsLoading }) => {
         let paramValue = value;
 
         if (value instanceof File) {
-            const processedFile = await processFile(value, validateData, showNotification);
+            const processedFile = await processFile(value, showNotification);
             if (!processedFile) return;
 
             paramValue = processedFile.name;

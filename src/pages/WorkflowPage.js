@@ -14,7 +14,6 @@ import InputPanel from '../components/InputPanel';
 import ErrorBoundary from '/src/components/ErrorBoundary'; // Ensure this component exists
 import OperationsPanel from '/src/components/OperationsPanel';
 import RecipePanel from '/src/components/RecipePanel';
-import { DataTypeContext } from '/src/contexts/DataTypeContext';
 import { loadToolIndex, loadTool } from '../utils/toolUtils';
 import ToolParameterSection from '../components/ToolParameterSection';
 import ToolOutputPanel from '../components/ToolOutputPanel'

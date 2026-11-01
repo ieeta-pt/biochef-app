@@ -2,7 +2,6 @@ import UploadIcon from '@mui/icons-material/Upload';
 import { Box, IconButton, MenuItem, Paper, Select, TextField, Tooltip, Typography } from '@mui/material';
 import React, { useContext, useEffect, useState } from 'react';
 import { getTool } from '../utils/toolUtils';
-import { DataTypeContext } from '../contexts/DataTypeContext';
 import { NotificationContext } from '../contexts/NotificationContext';
 import { detectDataType, detectIsBinaryFile } from '../utils/detectDataType';
 import { getUploadExtensions, getTypeExampleInput } from '../utils/typeDefinitions';
@@ -12,7 +11,7 @@ import { makeTextDataValue, makeBinaryDataValue, dataValueToString } from '../ut
 const ToolInputPanel = ({ tool, inputData, setInputData }) => {
     const [fileName, setFileName] = useState('');
     const showNotification = useContext(NotificationContext);
-    const { setInputDataType, validateData, inputDataType } = useContext(DataTypeContext);
+    const [setInputDataType, inputDataType] = useState('');
     const [isValid, setIsValid] = useState(true);
     const [isAcceptable, setIsAcceptable] = useState(true);
     const [toolInputFormat, setToolInputFormat] = useState([]);
