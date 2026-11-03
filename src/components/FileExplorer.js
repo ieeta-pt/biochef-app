@@ -39,7 +39,6 @@ import {
 } from '@mui/material';
 import JSZip from 'jszip';
 import React, { useContext, useRef, useState } from 'react';
-import { DataTypeContext } from '../contexts/DataTypeContext';
 import { NotificationContext } from '../contexts/NotificationContext';
 import { getUploadExtensions } from '../utils/typeDefinitions';
 import { processFile } from '../utils/fileProcessor';
@@ -59,7 +58,6 @@ const FileExplorer = ({ selectedFiles, setSelectedFiles, tree, setTree }) => {
     // Old variables
     const [isAcceptable, setIsAcceptable] = useState(true);
     const [openMetadataDialog, setOpenMetadataDialog] = useState(false);
-    const { validateData } = useContext(DataTypeContext);
     const showNotification = useContext(NotificationContext);
 
     const acceptableExtensions = getUploadExtensions();
@@ -177,7 +175,7 @@ const FileExplorer = ({ selectedFiles, setSelectedFiles, tree, setTree }) => {
                 return; // Stop processing
             }
 
-            const processedFiles = await Promise.all(files.map(file => processFile(file, validateData, (message, type) => showNotification(message, type))));
+            const processedFiles = await Promise.all(files.map(file => processFile(file, (message, type) => showNotification(message, type))));
             const validFiles = processedFiles.filter((file) => file !== null);
 
             // Set correct relativePath with parent folder path
@@ -251,7 +249,7 @@ const FileExplorer = ({ selectedFiles, setSelectedFiles, tree, setTree }) => {
             // Process each file from the uploaded directory
             for (const file of files) {
                 try {
-                    const processedFile = await processFile(file, validateData, (message, type) => showNotification(message, type));
+                    const processedFile = await processFile(file, (message, type) => showNotification(message, type));
                     if (processedFile) {
                         const relativePath = file.webkitRelativePath;
                         const pathParts = relativePath.split('/');
@@ -356,7 +354,7 @@ const FileExplorer = ({ selectedFiles, setSelectedFiles, tree, setTree }) => {
                 });
 
                 try {
-                    const processedFile = await processFile(simulatedFile, validateData, (message, type) => showNotification(message, type));
+                    const processedFile = await processFile(simulatedFile, (message, type) => showNotification(message, type));
                     if (processedFile) {
                         const pathParts = fileName.split('/');
 

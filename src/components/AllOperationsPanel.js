@@ -14,7 +14,6 @@ import {
 import { alpha } from '@mui/material/styles';
 import debounce from 'lodash.debounce';
 import React, { useContext, useMemo, useState, useEffect } from 'react';
-import { DataTypeContext } from '../contexts/DataTypeContext';
 import { NotificationContext } from '../contexts/NotificationContext';
 import { getToolsByCategory, getTool } from '../utils/toolUtils';
 
@@ -23,7 +22,6 @@ import { TourContext } from '../contexts/TourContext';
 const AllOperationsPanel = ({ onToolClick }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [expandedCategories, setExpandedCategories] = useState({});
-    const { dataType } = useContext(DataTypeContext);
     const showNotification = useContext(NotificationContext);
     const { tourRegisterSteps, tourIsActive } = useContext(TourContext);
 

@@ -133,4 +133,10 @@ export function validateCatalogEntry(entry) {
   requireCatalog(entry.evidence?.bundle_json, "Tool bundle evidence digest is missing");
   requireCatalog(entry.runtime?.wasm?.wasm_digest, "Tool WASM digest is missing");
   requireCatalog(entry.runtime?.wasm?.js_digest, "Tool JS digest is missing");
+  if ("data_digest" in entry.runtime.wasm) {
+    requireCatalog(
+      typeof entry.runtime.wasm.data_digest === "string" && /^sha256:[a-fA-F0-9]{64}$/.test(entry.runtime.wasm.data_digest),
+      "Tool data digest is invalid",
+    );
+  }
 }

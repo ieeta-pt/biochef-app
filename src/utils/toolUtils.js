@@ -1,4 +1,4 @@
-import Aioli from "./aioli-custom/aioli"
+import Aioli from "@biowasm/aioli";
 import logger from "./logger";
 import { detectIsBinaryFile } from "./detectDataType";
 import { makeBinaryDataValue, makeTextDataValue } from './dataValue'
@@ -359,7 +359,8 @@ export async function loadTool(toolName) {
     bundle.name !== bundleEntry.name ||
     bundle.version !== bundleEntry.version ||
     bundle.runtime?.wasm?.wasm_digest !== bundleEntry.runtime.wasm.wasm_digest ||
-    bundle.runtime?.wasm?.js_digest !== bundleEntry.runtime.wasm.js_digest
+    bundle.runtime?.wasm?.js_digest !== bundleEntry.runtime.wasm.js_digest ||
+    bundle.runtime?.wasm?.data_digest !== bundleEntry.runtime.wasm.data_digest
   ) {
     logger.error(`Loaded bundle does not match verified catalog entry for ${repo}`);
     return false;
@@ -411,8 +412,15 @@ async function getToolBlobs(toolName) {
   const jsUrl = `${base_url}/${toolConfig.repo}/blobs/${toolConfig.runtime.wasm.js_digest}`
   const wasmBlob = await generateBlob(wasmUrl, "application/wasm", authorization, toolConfig.runtime.wasm.wasm_digest)
   const jsBlob = await generateBlob(jsUrl, "application/javascript", authorization, toolConfig.runtime.wasm.js_digest)
+  const runtimeFiles = { [`${toolConfig.bin}.wasm`]: wasmBlob };
 
-  return [wasmBlob, jsBlob]
+  const dataDigest = toolConfig.runtime.wasm.data_digest;
+  if (dataDigest !== undefined) {
+    const dataUrl = `${base_url}/${toolConfig.repo}/blobs/${dataDigest}`;
+    runtimeFiles[`${toolConfig.bin}.data`] = await generateBlob(dataUrl, "application/octet-stream", authorization, dataDigest);
+  }
+
+  return { scriptUrl: jsBlob, runtimeFiles };
 }
 
 async function aioliReadFileHelper(CLI, fileName) {
@@ -475,144 +483,140 @@ export async function runTools(
   let outputs = {}
   let errors = {}
 
-  // prepare tools to be loaded by aioli
-  let aioliTools = []
+  // Each invocation gets an Aioli instance of its own, so a fresh Web Worker and
+  // a fresh module: a tool runs as it would in a new process. Reusing one
+  // module across the nodes that call the same tool ran main() again on the
+  // state the first call left, and a build that exits its runtime cannot run
+  // main() twice at all (#146). Files pass from one node to the next through
+  // the outputs below, which are already held here, not through a worker's
+  // file system. The downloaded runtime files are reused across invocations.
+  const toolBlobs = {}
+
   for (const invocation of toolInvocations) {
-    const toolAlreadyAdded = aioliTools.some((t) => t.tool == invocation.toolName)
-    if (toolAlreadyAdded) continue
-
-    const [wasmBlob, jsBlob] = await getToolBlobs(invocation.toolName)
-
-    const needsReinit = invocation.toolName.includes("GTO")
-
-    aioliTools.push({
-      // TODO(andrade) look again into what each argument does
+    toolBlobs[invocation.toolName] ??= await getToolBlobs(invocation.toolName)
+    const { scriptUrl, runtimeFiles } = toolBlobs[invocation.toolName]
+    const CLI = await new Aioli([{
       tool: invocation.toolName,
-      scriptUrl: jsBlob,
-      wasmUrl: wasmBlob,
+      scriptUrl,
+      runtimeFiles,
       loading: "lazy",
-      reinit: needsReinit,
-    })
-  }
+    }], {
+      printInterleaved: false,
+      debug: false,
+    });
 
-  const hasNonReinitTool = aioliTools.some((t) => t.reinit === false);
-  if (!hasNonReinitTool) aioliTools.push("base/1.0.0")
+    try {
+      // 1. Prepare the inputs
+      const toolDefinition = getTool(invocation.toolName)
+      // Emscripten builds argv with stringToUTF8OnStack, which reads .length:
+      // a number (an untouched recipe default) silently becomes "".
+      let args = invocation.toolArguments.map(String)
+      let lastArgs = [] // arguments that must appear after all flagged arguments.
 
-  // load tools
-  const CLI = await new Aioli(aioliTools, {
-    // TODO(andrade) look again into what each argument does
-    printInterleaved: false,
-    debug: false,
-  });
+      for (const inputDefinition of toolDefinition.io.inputs) {
+        if (!invocation.inputs[inputDefinition.name]) continue
+        const { mode, value } = invocation.inputs[inputDefinition.name];
 
-  // 1. Prepare the inputs
-  for (const invocation of toolInvocations) {
-    const toolDefinition = getTool(invocation.toolName)
-    // Emscripten builds argv with stringToUTF8OnStack, which reads .length:
-    // a number (an untouched recipe default) silently becomes "".
-    let args = invocation.toolArguments.map(String)
-    let lastArgs = [] // arguments that must appear after all flagged arguments.
+        let inputFileName = undefined
+        let stdinValue = undefined
 
-    for (const inputDefinition of toolDefinition.io.inputs) {
-      if (!invocation.inputs[inputDefinition.name]) continue
-      const { mode, value } = invocation.inputs[inputDefinition.name];
+        if (mode === "text") {
+          if (inputDefinition.mode === "file") {
+            inputFileName = `input-${invocation.uniqueId}-${inputDefinition.name}.txt`
+            const fileContent = value.kind === "binary" ? new Blob([value.data]) : value.data;
+            await CLI.mount({ name: inputFileName, data: fileContent })
+          }
+          else if (inputDefinition.mode === "stdin") {
+            stdinValue = value.data
+          }
+        }
+        else if (mode === "output") {
+          const [source, sourceOutput] = value
+          inputFileName = `${source}-${sourceOutput}.txt`
+          const sourceValue = outputs[source]?.[sourceOutput] ?? makeTextDataValue("")
 
-      let inputFileName = undefined
-      let stdinValue = undefined
+          if (inputDefinition.mode === "file") {
+            const fileContent = sourceValue.kind === "binary" ? new Blob([sourceValue.data]) : sourceValue.data;
+            await CLI.mount({ name: inputFileName, data: fileContent })
+          }
+          else if (inputDefinition.mode === "stdin") {
+            stdinValue = sourceValue.data
+          }
+        }
 
-      if (mode === "text") {
         if (inputDefinition.mode === "file") {
-          inputFileName = `input-${invocation.uniqueId}-${inputDefinition.name}.txt`
-          const fileContent = value.kind === "binary" ? new Blob([value.data]) : value.data;
-          await CLI.mount({ name: inputFileName, data: fileContent })
+          if (inputDefinition.flag) {
+            args.push(inputDefinition.flag)
+            args.push(inputFileName)
+          }
+          else {
+            lastArgs.push(inputFileName)
+          }
         }
         else if (inputDefinition.mode === "stdin") {
-          stdinValue = value.data
+          CLI.stdin = stdinValue
         }
-      }
-      else if (mode === "output") {
-        const [source, sourceOutput] = value
-        inputFileName = `${source}-${sourceOutput}.txt`
+      };
 
-        if (inputDefinition.mode === "stdin") {
-          const fileData = await aioliReadFileHelper(CLI, inputFileName)
-          stdinValue = fileData.data
-        }
-      }
+      for (const outputDefinition of toolDefinition.io.outputs) {
+        if (outputDefinition.mode !== "file" || outputDefinition.flag == undefined) continue
 
-      if (inputDefinition.mode === "file") {
-        if (inputDefinition.flag) {
-          args.push(inputDefinition.flag)
-          args.push(inputFileName)
+        const outputTarget = outputDefinition.filename ?? `${invocation.uniqueId}-${outputDefinition.name}.txt`
+
+        if (outputDefinition.flag == "") {
+          lastArgs.push(outputTarget)
         }
         else {
-          lastArgs.push(inputFileName)
+          args.push(outputDefinition.flag)
+          args.push(outputTarget)
         }
       }
-      else if (inputDefinition.mode === "stdin") {
-        CLI.stdin = stdinValue
-      }
-    };
-
-    for (const outputDefinition of toolDefinition.io.outputs) {
-      if (outputDefinition.mode !== "file" || outputDefinition.flag == undefined) continue
-
-      const outputTarget = outputDefinition.filename ?? `${invocation.uniqueId}-${outputDefinition.name}.txt`
-
-      if (outputDefinition.flag == "") {
-        lastArgs.push(outputTarget)
-      }
-      else {
-        args.push(outputDefinition.flag)
-        args.push(outputTarget)
-      }
-    }
     
-    args = [...args, ...lastArgs]
+      args = [...args, ...lastArgs]
 
-    // 2. Run the tool
-    const { stdout, stderr } = await CLI.exec(invocation.toolName, args)
-    errors[invocation.uniqueId] = [stderr]
+      // 2. Run the tool
+      const { stdout, stderr } = await CLI.exec(invocation.toolName, args)
+      errors[invocation.uniqueId] = [stderr]
 
-    logger.log("[runMultipleTools]", invocation.toolName, {
-      args,
-      stdout,
-      stderr,
-    });
+      logger.log("[runMultipleTools]", invocation.toolName, {
+        args,
+        stdout,
+        stderr,
+      });
     
-    // Artificial delay for testing purposes
-    // const delay = 1000;
-    // await new Promise(resolve => setTimeout(resolve, delay));
+      // Artificial delay for testing purposes
+      // const delay = 1000;
+      // await new Promise(resolve => setTimeout(resolve, delay));
 
-    // 3. Use outputs to save results and prepare files for the next invocations
-    for (const outputDefinition of toolDefinition.io.outputs) {
-      const outputFileName = `${invocation.uniqueId}-${outputDefinition.name}.txt`
-      let result
+      // 3. Save the results; the invocations that use them mount them themselves
+      for (const outputDefinition of toolDefinition.io.outputs) {
+        let result
 
-      if (outputDefinition.mode === "stdout") {
-        await CLI.mount({ name: outputFileName, data: stdout })
-        result = makeTextDataValue(stdout)
-      }
-      else if (outputDefinition.mode === "file") {
-        const fileToRead = outputDefinition.filename ?? `${invocation.uniqueId}-${outputDefinition.name}.txt`
+        if (outputDefinition.mode === "stdout") {
+          result = makeTextDataValue(stdout)
+        }
+        else if (outputDefinition.mode === "file") {
+          const fileToRead = outputDefinition.filename ?? `${invocation.uniqueId}-${outputDefinition.name}.txt`
 
-        result = await aioliReadFileHelper(CLI, fileToRead)
-        if (!result) {
-          // TODO maybe have a proper way to handle this
-          result = makeTextDataValue("")
-          errors[invocation.uniqueId].push(`Output "${outputDefinition.name}" did not produce the expected file "${fileToRead}"`)
+          result = await aioliReadFileHelper(CLI, fileToRead)
+          if (!result) {
+            // TODO maybe have a proper way to handle this
+            result = makeTextDataValue("")
+            errors[invocation.uniqueId].push(`Output "${outputDefinition.name}" did not produce the expected file "${fileToRead}"`)
+          }
         }
 
-        if (result.kind == "binary") {
-          await CLI.mount({ name: outputFileName, data: new Blob([result.data]) })
-        }
-        else {
-          await CLI.mount({ name: outputFileName, data: result.data })
-        }
+        outputs[invocation.uniqueId] ??= {};
+        outputs[invocation.uniqueId][outputDefinition.name] = result;
       }
 
-      outputs[invocation.uniqueId] ??= {};
-      outputs[invocation.uniqueId][outputDefinition.name] = result;
+    } finally {
+      // The worker holds the module and its heap; nothing reads it after this.
+      try {
+        await CLI.close()
+      } catch (err) {
+        logger.warn("[runMultipleTools] Failed to close the Aioli worker", err)
+      }
     }
 
     // call the callback function after invocation is done
@@ -643,4 +647,11 @@ export function toolHasNoInputs(toolName) {
   if (!tool) return true;
 
   return !tool.io?.inputs || tool.io.inputs.length === 0;
+}
+
+export function getToolRuntimes(toolName) {
+  const tool = getTool(toolName);
+  if (!tool) return;
+
+  return tool.runtime?.modes
 }

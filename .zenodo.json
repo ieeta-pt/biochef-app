@@ -9,7 +9,7 @@
     { "name": "Reis, Miguel", "affiliation": "IEETA, University of Aveiro" },
     { "name": "Oliveira, José Luís", "affiliation": "IEETA, University of Aveiro", "orcid": "0000-0002-6672-6176" }
   ],
-  "license": "MIT",
+  "license": "Apache-2.0",
   "keywords": ["genomics", "bioinformatics", "workflows", "WebAssembly", "privacy"],
   "related_identifiers": [
     { "identifier": "10.1186/s12859-026-06431-1", "relation": "isDocumentedBy", "scheme": "doi" },

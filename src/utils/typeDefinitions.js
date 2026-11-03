@@ -90,6 +90,14 @@ export const typeDefinitions = [
     example: 'queryA\t500\t10\t490\t+\ttargetA\t1000\t100\t580\t470\t480\t60\nqueryB\t300\t0\t300\t-\ttargetA\t1000\t650\t950\t290\t300\t60',
   },
   {
+    id: 'GAF',
+    validator: 'gaf',
+    defaultExtension: '.gaf',
+    uploadExtensions: ['.gaf'],
+    edgeColor: '#00acc1',
+    example: 'read1\t600\t153\t446\t+\t>s1>s2\t600\t153\t446\t293\t293\t60\nread1\t600\t10\t148\t+\t>s1\t300\t160\t298\t138\t138\t60',
+  },
+  {
     id: 'SAM',
     validator: 'sam',
     defaultExtension: '.sam',
@@ -115,12 +123,28 @@ export const typeDefinitions = [
     example: 'seq\t.\tgene\t1\t30\t.\t+\t.\tID=gene1\nseq\t.\tmRNA\t1\t30\t.\t+\t.\tID=tx1;Parent=gene1\nseq\t.\texon\t1\t30\t.\t+\t.\tParent=tx1\nseq\t.\tCDS\t1\t30\t.\t+\t0\tParent=tx1',
   },
   {
+    id: 'RGFA',
+    validator: 'rgfa',
+    defaultExtension: '.gfa',
+    uploadExtensions: ['.gfa', '.rgfa'],
+    edgeColor: '#bf360c',
+    example: 'S\ts1\tACGTACGTAC\tSN:Z:seq\tSO:i:0\tSR:i:0\nS\ts2\tGGGGGCCCCC\tSN:Z:seq\tSO:i:10\tSR:i:0\nS\ts3\tTTTTTAAAAATT\tSN:Z:alt\tSO:i:0\tSR:i:1\nS\ts4\tCATGCATGCA\tSN:Z:seq\tSO:i:20\tSR:i:0\nL\ts1\t+\ts2\t+\t0M\tSR:i:0\nL\ts2\t+\ts4\t+\t0M\tSR:i:0\nL\ts1\t+\ts3\t+\t0M\tSR:i:1\nL\ts3\t+\ts4\t+\t0M\tSR:i:1',
+  },
+  {
     id: 'GFA',
     validator: 'gfa',
     defaultExtension: '.gfa',
     uploadExtensions: ['.gfa'],
     edgeColor: '#ef6c00',
     example: 'H\tVN:Z:1.0\nS\ts1\tACGTACGTACGT\nS\ts2\tTTACGTACGTAC\nL\ts1\t+\ts2\t+\t4M\nP\tp1\ts1+,s2+\t*',
+  },
+  {
+    id: 'WIG',
+    validator: 'wig',
+    defaultExtension: '.wig',
+    uploadExtensions: ['.wig', '.wiggle'],
+    edgeColor: '#ffa726',
+    example: 'variableStep chrom=seq span=5\n1\t1.5\n11\t3',
   },
   {
     id: 'JSON',
@@ -364,6 +388,14 @@ export const typeDefinitions = [
     defaultExtension: '.fmd',
     uploadExtensions: ['.fmd'],
     edgeColor: '#6d4c41',
+    format: 'binary'
+  },
+  {
+    id: 'YAK',
+    validator: 'yak',
+    defaultExtension: '.yak',
+    uploadExtensions: ['.yak'],
+    edgeColor: '#5d4037',
     format: 'binary'
   },
 ];
