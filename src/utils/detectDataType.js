@@ -95,8 +95,18 @@ function validateAminoAcids(content) {
   return /^[ACDEFGHIKLMNPQRSTUVWY-]+$/i.test(content.trim());
 }
 
+// gto_fastq_pack's one line per read: the bases and the scores (or, with -s,
+// the scores and the bases), the header and the "+" line, each ended by a DEL
+// (0x7f) in place of its newline, then a tab and the read's index
 function validatePackagedFastq(content) {
-  // ???????
+  if (!content || !content.replace(/^\n+|\n+$/g, '')) return false;
+  return content.replace(/^\n+|\n+$/g, '').split('\n').every(line => {
+    const fields = line.replace(/\r$/, '').split('\x7f');
+    if (fields.length !== 5 || !/^\t\d+$/.test(fields[4])) return false;
+    const [first, second, , plus] = fields;
+    return first.length > 0 && first.length === second.length && plus.startsWith('+')
+      && /^[!-~]+$/.test(first) && /^[!-~]+$/.test(second);
+  });
 }
 
 function validateNum(content) {
