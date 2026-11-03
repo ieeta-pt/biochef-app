@@ -1,4 +1,4 @@
-import { AccountTree, Science } from '@mui/icons-material';
+import { AccountTree, MenuBook, OpenInNew, Science } from '@mui/icons-material';
 import { AppBar, Box, Button, Toolbar, Tooltip, useTheme } from '@mui/material';
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -35,6 +35,23 @@ const Navbar = () => {
             },
         },
     });
+
+    // External link, kept apart from the in-app tabs and the institution logos
+    const linkPillStyle = {
+        color: 'white',
+        textTransform: 'none',
+        fontSize: '0.95rem',
+        fontWeight: 500,
+        borderRadius: 999,
+        px: 1.75,
+        py: 0.5,
+        mr: 3,
+        backgroundColor: 'rgba(255, 255, 255, 0.14)',
+        border: '1px solid rgba(255, 255, 255, 0.35)',
+        '&:hover': {
+            backgroundColor: 'rgba(255, 255, 255, 0.24)',
+        },
+    };
 
     return (
         <AppBar
@@ -74,6 +91,18 @@ const Navbar = () => {
 
                 {/* Right side logos */}
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Button
+                        component="a"
+                        href="https://home.biochef.app/workflows/#tutorials"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        startIcon={<MenuBook />}
+                        endIcon={<OpenInNew sx={{ fontSize: '0.9rem !important', opacity: 0.8 }} />}
+                        sx={linkPillStyle}
+                    >
+                        Tutorials
+                    </Button>
+
                     {/* IEETA logo */}
                     <Tooltip title="IEETA">
                         <a

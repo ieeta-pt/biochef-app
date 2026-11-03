@@ -3,7 +3,6 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
-import { DataTypeProvider } from './contexts/DataTypeContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { ValidationErrorsProvider } from './contexts/ValidationErrorsContext';
 import "./index.css"
@@ -33,14 +32,12 @@ root.render(
   <React.StrictMode>
     <ThemeProvider theme={theme}>
       <NotificationProvider>
-        <DataTypeProvider>
-          <ValidationErrorsProvider>
-            <TourProvider>
-              <CssBaseline />
-              <App />
-            </TourProvider>
-          </ValidationErrorsProvider>
-        </DataTypeProvider>
+        <ValidationErrorsProvider>
+          <TourProvider>
+            <CssBaseline />
+            <App />
+          </TourProvider>
+        </ValidationErrorsProvider>
       </NotificationProvider>
     </ThemeProvider>
   </React.StrictMode>

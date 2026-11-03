@@ -12,7 +12,6 @@ import {
   MenuItem
 } from '@mui/material';
 import React, { useContext, useEffect, useState } from 'react';
-import { DataTypeContext } from '../contexts/DataTypeContext';
 import { NotificationContext } from '../contexts/NotificationContext';
 import { detectDataType, detectAllDataTypes } from '../utils/detectDataType';
 import FileExplorer from './FileExplorer';
