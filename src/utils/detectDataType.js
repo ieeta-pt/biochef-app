@@ -626,6 +626,24 @@ function validateJson(content) {
   }
 }
 
+// VCF meta-information lines, "##key=value" or "##key=<...>", as bcftools
+// annotate -h adds to a header; without the #CHROM line, which they would
+// follow
+function validateVcfHeader(content) {
+  if (!content?.trim()) return false;
+  return content.trim().split(/\r?\n/).every(line => /^##[A-Za-z0-9_.-]+=./.test(line));
+}
+
+// A genome file: one line per sequence, its name and its length, as UCSC's
+// chrom.sizes and bedtools' -g files are
+function validateChromSizes(content) {
+  if (!content?.trim()) return false;
+  return content.trim().split(/\r?\n/).every(line => {
+    const fields = line.split('\t');
+    return fields.length === 2 && fields[0] && !fields[0].includes(' ') && /^[1-9]\d*$/.test(fields[1]);
+  });
+}
+
 function validateFai(content) {
   if (!content || !content.trim()) return false;
 
@@ -675,6 +693,7 @@ const validators = {
   fmd: validateFmd,
   yak: validateYak,
   vcf: validateVcf,
+  vcfHeader: validateVcfHeader,
   gvcf: validateGvcf,
   vcfGz: validateVcfGz,
   gvcfGz: validateGvcfGz,
@@ -691,6 +710,7 @@ const validators = {
   bcf: validateBcf,
   newick: validateNewick,
   fai: validateFai,
+  chromSizes: validateChromSizes,
   json: validateJson,
   text: () => true, // Default fallback for TEXT
 };
