@@ -6,7 +6,7 @@ import { WorkflowNode } from './nodes/WorkflowNode';
 import { OutputWorkflowNode } from './nodes/OutputWorkflowNode';
 import { InputWorkflowNode } from './nodes/InputWorkflowNode';
 import { WorkflowEdge } from './nodes/WorkflowEdge';
-import { loadTool, toolHasNoInputs, getTool, runTools } from '../utils/toolUtils';
+import { loadTool, toolHasNoInputs, getTool, runTools, parameterArguments } from '../utils/toolUtils';
 import { NotificationContext } from '../contexts/NotificationContext';
 import { getNodeHandles, isValidWorkflowConnection, prepareWorkflowNodesForExport, prepareWorkflowNodesForLocalStorage } from '../utils/workflowUtils';
 import logger from '../utils/logger';
@@ -591,8 +591,7 @@ const RecipePanel = forwardRef(({ selectedNode, setSelectedNode, indexLoaded }, 
           args.push(param.flag);
         }
         else if (value !== undefined && value !== null && value !== '') {
-          if (param.flag) args.push(param.flag)
-          args.push(value);
+          args.push(...parameterArguments(param.flag, value));
         }
       });
 

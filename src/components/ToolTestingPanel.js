@@ -18,7 +18,7 @@ import {
     Typography
 } from '@mui/material';
 import React, { useContext, useEffect, useState } from 'react';
-import { getTool } from '../utils/toolUtils';
+import { getTool, parameterArguments } from '../utils/toolUtils';
 import { NotificationContext } from '../contexts/NotificationContext';
 import { runTools } from '../utils/toolUtils';
 import { detectDataType } from '../utils/detectDataType';
@@ -170,9 +170,10 @@ const ToolTestingPanel = ({ tool, inputData, setOutputData, setIsLoading }) => {
             let args = [];
             toolConfig.parameters.forEach((param) => {
                 if (param.required || parameters[param.name].enabled) {
-                    if (param.flag) args.push(param.flag);
-                    if (param.type != "flag") {
-                        args.push(parameters[param.name].value);
+                    if (param.type == "flag") {
+                        if (param.flag) args.push(param.flag);
+                    } else {
+                        args.push(...parameterArguments(param.flag, parameters[param.name].value));
                     }
                 }
             });

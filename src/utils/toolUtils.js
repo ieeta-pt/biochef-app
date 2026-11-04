@@ -655,3 +655,10 @@ export function getToolRuntimes(toolName) {
 
   return tool.runtime?.modes
 }
+
+// A flag that ends in "=" (lastz's --format=) takes its value in the same
+// argument; any other flag takes it as the next one.
+export function parameterArguments(flag, value) {
+  if (!flag) return [value];
+  return flag.endsWith("=") ? [flag + value] : [flag, value];
+}
