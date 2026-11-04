@@ -6,6 +6,7 @@ import ToolOutputPanel from '/src/components/ToolOutputPanel';
 import ToolTestingPanel from '/src/components/ToolTestingPanel';
 import { loadToolIndex, loadTool } from '../utils/toolUtils';
 import { TourContext } from '../contexts/TourContext';
+import { NotificationContext } from '../contexts/NotificationContext';
 
 const ToolsPage = () => {
     const [selectedTool, setSelectedTool] = useState(null);
@@ -16,6 +17,7 @@ const ToolsPage = () => {
     const [tab, setTab] = useState(0);
 
     const { tourStart, tourRegisterSteps, tourMoveNext, tourIsActive } = useContext(TourContext);
+    const showNotification = useContext(NotificationContext);
 
     const handleTabChange = (event, newValue) => {
         setTab(newValue);
@@ -66,12 +68,15 @@ const ToolsPage = () => {
         setLoadingTool(true);
         try {
             const loaded = await loadTool(tool.name);
-            if (!loaded) return;
+            if (!loaded) throw new Error("the tool is unavailable");
             setSelectedTool(tool);
             if(tourIsActive) tourMoveNext();
             if (isMobile) setTab(2);
         } catch (error) {
             console.error("Tool loading failed", error);
+            setSelectedTool(null);
+            setOutputData('');
+            showNotification(`Could not load ${tool.name}: ${error.message}`, 'error');
         } finally {
             setLoadingTool(false);
         }
