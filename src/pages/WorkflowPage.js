@@ -8,7 +8,7 @@ import {
   useTheme,
   useMediaQuery
 } from '@mui/material';
-import React, { useCallback, useEffect, useState, useMemo, useRef } from 'react';
+import React, { useCallback, useContext, useEffect, useState, useMemo, useRef } from 'react';
 import { getTool } from '../utils/toolUtils';
 import InputPanel from '../components/InputPanel';
 import ErrorBoundary from '/src/components/ErrorBoundary'; // Ensure this component exists
@@ -18,6 +18,7 @@ import { loadToolIndex, loadTool } from '../utils/toolUtils';
 import ToolParameterSection from '../components/ToolParameterSection';
 import ToolOutputPanel from '../components/ToolOutputPanel'
 import { detectAllDataTypes } from '../utils/detectDataType';
+import { NotificationContext } from '../contexts/NotificationContext';
 
 const WorkflowPage = () => {
   const recipePanelRef = useRef();
@@ -39,6 +40,8 @@ const WorkflowPage = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const [selectedNode, setSelectedNode] = useState(null);
+  const [loadingTools, setLoadingTools] = useState([]);
+  const showNotification = useContext(NotificationContext);
   const selectedNodeData = useMemo(() => {
     return selectedNode ? selectedNode.data : null;
   }, [selectedNode]);
@@ -61,11 +64,20 @@ const WorkflowPage = () => {
   }, []);
 
   const handleAddOperation = async (toolName) => {
-    const loaded = await loadTool(toolName);
-    if (!loaded) return;
-    const tool = getTool(toolName);
-    if (!tool) return;
-    recipePanelRef.current.addWorkflowNode(tool);
+    if (loadingTools.includes(toolName)) return;
+
+    setLoadingTools((prev) => [...prev, toolName]);
+    try {
+      const loaded = await loadTool(toolName);
+      const tool = loaded && getTool(toolName);
+      if (!tool) throw new Error("the tool is unavailable");
+      recipePanelRef.current.addWorkflowNode(tool);
+    } catch (error) {
+      console.error("Tool loading failed", error);
+      showNotification(`Could not load ${toolName}: ${error.message}`, 'error');
+    } finally {
+      setLoadingTools((prev) => prev.filter((name) => name !== toolName));
+    }
   };
 
   const updateSelectedNodeData = (newData) => {
@@ -192,6 +204,7 @@ const WorkflowPage = () => {
                 onAddOperation={handleAddOperation}
                 // isWorkflowEmpty={isWorkflowEmpty}
                 // isLoading={isLoading}
+                loadingTools={loadingTools}
                 setIsLoading={() => { return }}
                 // insertAtIndex={insertAtIndex}
                 // setInsertAtIndex={setInsertAtIndex}

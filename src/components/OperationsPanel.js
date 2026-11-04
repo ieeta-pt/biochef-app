@@ -26,7 +26,7 @@ import { getToolsByCategory, getTool } from '../utils/toolUtils';
 import { detectAllDataTypes } from '../utils/detectDataType';
 import { isValidConnection } from '../utils/workflowUtils';
 
-const OperationsPanel = ({ onAddOperation, isWorkflowEmpty, isLoading, setIsLoading, insertAtIndex, setInsertAtIndex, addingATool, setAddingATool, filteredTools, setFilteredTools, selectedFiles, tabIndex, workflow, selectedNode }) => {
+const OperationsPanel = ({ onAddOperation, loadingTools = [], isWorkflowEmpty, isLoading, setIsLoading, insertAtIndex, setInsertAtIndex, addingATool, setAddingATool, filteredTools, setFilteredTools, selectedFiles, tabIndex, workflow, selectedNode }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedCategories, setExpandedCategories] = useState({});
   const showNotification = useContext(NotificationContext);
@@ -349,7 +349,9 @@ const OperationsPanel = ({ onAddOperation, isWorkflowEmpty, isLoading, setIsLoad
                             }}
                           >
                             <ListItemText primary={operation.name} />
-                            <AddCircle sx={{ color: 'primary.main', ml: 'auto' }} />
+                            {loadingTools.includes(operation.name)
+                              ? <CircularProgress size={24} sx={{ ml: 'auto' }} />
+                              : <AddCircle sx={{ color: 'primary.main', ml: 'auto' }} />}
                           </ListItemButton>
                         </span>
                       </Tooltip>
