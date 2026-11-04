@@ -650,7 +650,7 @@ const RecipePanel = forwardRef(({ selectedNode, setSelectedNode, indexLoaded }, 
       console.error("Failed to run the workflow:", error);
       showNotification(`Could not run the workflow: ${error.message}`, "error");
       for (const nodeId of component) {
-        if (getNode(nodeId).type == "workflowNode") {
+        if (getNode(nodeId)?.type == "workflowNode") {
           updateNodeData(nodeId, { isRunning: false })
         }
       }
