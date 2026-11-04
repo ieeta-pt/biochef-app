@@ -11,7 +11,7 @@ import { makeTextDataValue, makeBinaryDataValue, dataValueToString } from '../ut
 const ToolInputPanel = ({ tool, inputData, setInputData }) => {
     const [fileName, setFileName] = useState('');
     const showNotification = useContext(NotificationContext);
-    const [setInputDataType, inputDataType] = useState('');
+    const [inputDataType, setInputDataType] = useState('');
     const [isValid, setIsValid] = useState(true);
     const [isAcceptable, setIsAcceptable] = useState(true);
     const [toolInputFormat, setToolInputFormat] = useState([]);
