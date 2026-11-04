@@ -21,9 +21,9 @@ authors:
     family-names: Oliveira
     affiliation: "IEETA, University of Aveiro"
     orcid: "https://orcid.org/0000-0002-6672-6176"
-repository-code: "https://github.com/ieeta-pt/Biochef"
+repository-code: "https://github.com/ieeta-pt/biochef-app"
 url: "https://biochef.app"
-license: MIT
+license: Apache-2.0
 keywords:
   - genomics
   - bioinformatics

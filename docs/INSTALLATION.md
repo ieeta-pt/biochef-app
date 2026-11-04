@@ -6,7 +6,7 @@ This guide provides detailed instructions for setting up GTO BioChef on your loc
 
 Before you begin, ensure you have the following installed:
 
-- Node.js (v14 or later)
+- Node.js (v22.15 or later)
 - npm (usually comes with Node.js)
 - Emscripten (for compiling C code to WebAssembly)
 
