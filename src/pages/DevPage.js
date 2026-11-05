@@ -26,16 +26,21 @@ const DevPage = () => {
   const [inputValue, setInputValue] = useState({});
   const [selectedInput, setSelectedInput] = useState("");
 
+  const [showOnlyTimers, setShowOnlyTimers] = useState(false)
+
   const [outputValue, setOutputValue] = useState({});
   const [agentOutputValue, setAgentOutputValue] = useState({});
   const [diffValue, setDiffValue] = useState({});
   const [selectedOutput, setSelectedOutput] = useState("");
 
+  const [wasmTime, setWasmTime] = useState();
+  const [agentTime, setAgentTime] = useState();
+
   const [inputPreviewValue, setInputPreviewValue] = useState({});
   const [inputTruncated, setInputTruncated] = useState({});
   const fileInputRef = useRef(null);
 
-  const MAX_PREVIEW_LINES = 1000;
+  const MAX_PREVIEW_LINES = 100;
 
   function getInputPreview(text) {
     const lines = text.split(/\r\n|\n|\r/);
@@ -99,23 +104,25 @@ const DevPage = () => {
     }
 
     let response = null
+    let elapsed;
     try {
       const startTime = performance.now();
       response = await fetch(url, {
         method: "POST",
         body: formData
       });
-      const elapsedMs = performance.now() - startTime;
-      logger.log("[runWithAgent]", `Took: ${elapsedMs.toFixed(0)} ms`)
+      const endTime = performance.now();
+      elapsed = endTime - startTime;
+      setAgentTime(elapsed);
     }
     catch {
       logger.error("Could not send request to agent")
-      return
+      return { outputs: {}, time: -1 };
     }
 
     if (!response) {
       logger.error("Did not get a response from agent agent")
-      return
+      return { outputs: {}, time: -1 };
     }
 
     let data = null
@@ -124,7 +131,7 @@ const DevPage = () => {
     }
     catch {
       logger.error("Could not process response from agent")
-      return
+      return { outputs: {}, time: -1 };
     }
 
     for (const [node_id, outputs] of Object.entries(data)) {
@@ -138,8 +145,241 @@ const DevPage = () => {
           : { kind: "text", data: new TextDecoder().decode(bytes) };
       }
 
-      return processedOutputs
+      return {
+        outputs: processedOutputs,
+        time: elapsed,
+      };
     }
+  }
+
+  async function handleRun(fileInputs = inputValue) {
+    const initialOutputValues = {};
+    currentTool.io.outputs.forEach((output) => {
+      initialOutputValues[output.name] = makeTextDataValue("");
+    });
+
+    setOutputValue(initialOutputValues);
+    setAgentOutputValue(initialOutputValues);
+    setDiffValue(initialOutputValues);
+    setAgentTime(0);
+    setWasmTime(0);
+
+    let args = [];
+
+    currentTool.parameters.forEach((param) => {
+      if (param.required || paramValues[param.name].enabled) {
+        if (param.flag) {
+          args.push(param.flag);
+        }
+
+        if (param.type !== "flag") {
+          args.push(paramValues[param.name].value);
+        }
+      }
+    });
+
+    const inputs = {};
+
+    for (const [key, value] of Object.entries(fileInputs)) {
+      inputs[key] = {
+        mode: "text",
+        value,
+      };
+    }
+
+    // Run native tool
+    let timedOut = false;
+    let timeoutId;
+
+    const startTime = performance.now();
+
+    const result = await Promise.race([
+      runTools([
+        {
+          toolName: currentTool.name,
+          uniqueId: currentTool.name,
+          toolArguments: args,
+          inputs,
+        },
+      ]),
+      new Promise((resolve) => {
+        timeoutId = setTimeout(() => {
+          timedOut = true;
+
+          logger.error(`Tool ${currentTool.name} timed out`);
+
+          resolve({
+            outputs: {
+              [currentTool.name]: "",
+            },
+          });
+        }, 5 * 60000);
+      }),
+    ]);
+
+    clearTimeout(timeoutId);
+
+    const endTime = performance.now();
+    const currentWasmTime = timedOut ? -1 : endTime - startTime;
+
+    setWasmTime(currentWasmTime);
+
+    const nativeResult = result.outputs[currentTool.name];
+    setOutputValue(nativeResult);
+
+    // Prepare workflow for agent
+    const fileData = {};
+    const time_var = Date.now();
+    const tool_id = `${currentTool.id}-${time_var}`;
+
+    const flow = {
+      nodes: [
+        {
+          id: tool_id,
+          type: "workflowNode",
+          data: {
+            repo: currentTool.repo,
+            paramValues: paramValues,
+          },
+        },
+      ],
+      edges: [],
+    };
+
+    currentTool.io.inputs?.forEach((input, index) => {
+      const node = {
+        id: `input-${time_var}-${index}`,
+        type: "inputWorkflowNode",
+      };
+
+      const edge = {
+        id: `edge-input-${time_var}-${index}`,
+        source: `input-${time_var}-${index}`,
+        sourceHandle: "out",
+        target: tool_id,
+        targetHandle: input.name,
+      };
+
+      fileData[`input-${time_var}-${index}-out`] = fileInputs[input.name];
+
+      flow.nodes.push(node);
+      flow.edges.push(edge);
+    });
+
+    currentTool.io.outputs?.forEach((output, index) => {
+      const node = {
+        id: `output-${time_var}-${index}`,
+        type: "outputWorkflowNode",
+      };
+
+      const edge = {
+        id: `edge-output-${time_var}-${index}`,
+        source: tool_id,
+        sourceHandle: output.name,
+        target: `output-${time_var}-${index}`,
+        targetHandle: "in",
+      };
+
+      flow.nodes.push(node);
+      flow.edges.push(edge);
+    });
+
+    // Run agent
+    const agentResponse = await runWorkflowWithAgent(
+      flow,
+      fileData,
+      "http://localhost:8000/convert"
+    );
+
+    const agentResult = agentResponse?.outputs ?? {};
+    const awaitAgentTime = agentResponse?.time ?? -1;
+
+    setAgentOutputValue(agentResult);
+
+    // Calculate diffs
+    const diffValues = {};
+
+    for (const output of currentTool.io.outputs) {
+      const outputName = output.name;
+
+      const nativeText = nativeResult?.[outputName]?.data ?? "";
+      const agentText = agentResult?.[outputName]?.data ?? "";
+
+      const diffText = createPatch(
+        currentTool.name + " - " + outputName,
+        nativeText,
+        agentText
+      );
+
+      diffValues[outputName] = makeTextDataValue(diffText);
+    }
+
+    setDiffValue(diffValues);
+
+    return {
+      wasm: currentWasmTime,
+      agent: awaitAgentTime,
+    };
+  }
+
+  async function batchRun() {
+    const folderInput = document.createElement("input");
+    folderInput.type = "file";
+    folderInput.webkitdirectory = true;
+    folderInput.multiple = true;
+
+    setShowOnlyTimers(true);
+
+    folderInput.onchange = async (event) => {
+      const files = Array.from(event.target.files).sort((a, b) =>
+        a.name.localeCompare(b.name, undefined, { sensitivity: "base" })
+      );
+
+      if (!files.length) return;
+
+      const results = [];
+
+      function median(values) {
+        const sorted = [...values].sort((a, b) => a - b);
+        const mid = Math.floor(sorted.length / 2);
+
+        return sorted.length % 2
+          ? sorted[mid]
+          : (sorted[mid - 1] + sorted[mid]) / 2;
+      }
+
+      for (const file of files) {
+        const content = await file.text();
+        const fileInput = makeTextDataValue(content);
+
+        const fileInputs = {};
+
+        currentTool.io.inputs.forEach((input) => {
+          fileInputs[input.name] = fileInput;
+        });
+
+        const wasmTimes = [];
+        const agentTimes = [];
+
+        for (let i = 0; i < 5; i++) {
+          logger.info(`[BatchRun] Running run ${i} for file ${file.name}`)
+          const times = await handleRun(fileInputs);
+
+          wasmTimes.push(times.wasm);
+          agentTimes.push(times.agent);
+        }
+
+        results.push({
+          file: file.webkitRelativePath || file.name,
+          wasmMedian: median(wasmTimes),
+          agentMedian: median(agentTimes),
+        });
+      }
+
+      console.table(results);
+    };
+
+    folderInput.click();
   }
 
   const SEEN_TOOLS_STORAGE_KEY = "devPage.seenTools";
@@ -171,7 +411,7 @@ const DevPage = () => {
     return getAllTools().filter((tool) => {
       return (
         tool.runtime.modes.includes("native") &&
-        !seenTools.includes(tool.name) && tool.name.includes("(SEQTK)")
+        !seenTools.includes(tool.name) && (tool.name.includes("(SEQTK)") || tool.name.includes("(muscle)"))
       );
     });
   }
@@ -200,7 +440,6 @@ const DevPage = () => {
     setInputValue(initialInputValues);
     setInputTruncated({});
     setSelectedInput(tool.io.inputs[0]?.name);
-    console.log(tool.io.inputs[0]?.name)
 
     const initialOutputValues = {};
     tool.io.outputs.forEach((output) => {
@@ -353,157 +592,30 @@ const DevPage = () => {
               <Button
                 variant="outlined"
                 onClick={async () => {
-
-                  const initialOutputValues = {};
-                  currentTool.io.outputs.forEach((output) => {
-                    initialOutputValues[output.name] = makeTextDataValue("");
-                  });
-                  setOutputValue(initialOutputValues)
-                  setAgentOutputValue(initialOutputValues)
-                  setDiffValue(initialOutputValues)
-
-                  let args = [];
-
-                  currentTool.parameters.forEach((param) => {
-                    if (
-                      param.required ||
-                      paramValues[param.name].enabled
-                    ) {
-                      if (param.flag) {
-                        args.push(param.flag);
-                      }
-
-                      if (param.type !== 'flag') {
-                        args.push(paramValues[param.name].value);
-                      }
-                    }
-                  });
-
-                  const inputs = {};
-
-                  for (const [key, value] of Object.entries(inputValue)) {
-                    inputs[key] = {
-                      mode: 'text',
-                      value,
-                    };
-                  }
-
-                  const result = await runTools([
-                    {
-                      toolName: currentTool.name,
-                      uniqueId: currentTool.name,
-                      toolArguments: args,
-                      inputs,
-                    },
-                  ]);
-
-                  const nativeResult = result.outputs[currentTool.name]
-                  setOutputValue(nativeResult);
-
-                  // TODO
-                  var fileData = {}
-
-                  const time_var = Date.now()
-                  const tool_id = `${currentTool.id}-${time_var}`;
-
-                  var flow = {
-                    nodes: [
-                      {
-                        id: tool_id,
-                        type: "workflowNode",
-                        data: {
-                          repo: currentTool.repo,
-                          paramValues: paramValues
-                        }
-                      },
-                    ],
-                    edges: []
-                  }
-
-                  currentTool.io.inputs?.forEach((input, index) => {
-                    const node = {
-                      id: `input-${time_var}-${index}`,
-                      type: "inputWorkflowNode"
-                    }
-
-                    const edge = {
-                      id: `edge-input-${time_var}-${index}`,
-                      source: `input-${time_var}-${index}`,
-                      sourceHandle: "out",
-                      target: tool_id,
-                      targetHandle: input.name,
-                    }
-
-                    fileData[`input-${time_var}-${index}-out`] = inputValue[input.name]
-                    flow.nodes.push(node)
-                    flow.edges.push(edge)
-                  });
-
-                  currentTool.io.outputs?.forEach((output, index) => {
-                    const node = {
-                      id: `output-${time_var}-${index}`,
-                      type: "outputWorkflowNode"
-                    }
-
-                    const edge = {
-                      id: `edge-output-${time_var}-${index}`,
-                      source: tool_id,
-                      sourceHandle: output.name,
-                      target: `output-${time_var}-${index}`,
-                      targetHandle: "in",
-                    }
-
-                    flow.nodes.push(node)
-                    flow.edges.push(edge)
-                  });
-
-                  console.log(flow, fileData, "http://localhost:8000/convert")
-                  const agentResult = await runWorkflowWithAgent(flow, fileData, "http://localhost:8000/convert") ?? {}
-                  console.log(agentResult)
-                  setAgentOutputValue(agentResult);
-
-                  const diffValues = {};
-
-                  for (const output of currentTool.io.outputs) {
-                    const outputName = output.name;
-
-                    const nativeText = nativeResult?.[outputName]?.data ?? "";
-                    const agentText = agentResult?.[outputName]?.data ?? "";
-
-                    // const changes = diffChars(
-                    //   String(nativeText),
-                    //   String(agentText)
-                    // );
-
-                    // const diffText = changes
-                    //   .map((part) => {
-                    //     if (!part.added && !part.removed) return ""
-
-                    //     const prefix = part.added
-                    //       ? "+"
-                    //       : part.removed
-                    //         ? "-"
-                    //         : " ";
-
-                    //      return prefix + part.value.replace('\n', '↵') + "\n"
-                    //   })
-                    //   .join("");
-
-                    // NOTE/TODO(Anrade)
-                    // For some reason some GTO tools have inconsistent new lines at the end of the output
-                    // That is why this trim is here, it should not be needed but causes problems otherwise
-                    // Perhaps the issue is related with how gto takes inputs which has caused problems before
-                    // const diffText = createPatch(currentTool.name + " - " + outputName, nativeText.trim(), agentText.trim())
-                    const diffText = createPatch(currentTool.name + " - " + outputName, nativeText, agentText)
-
-                    diffValues[outputName] = makeTextDataValue(diffText);
-
-                  }
-
-                  setDiffValue(diffValues);
+                  setShowOnlyTimers(false)
+                  handleRun()
                 }}
               >
                 Run
+              </Button>
+
+              <Button
+                variant="outlined"
+                onClick={async () => {
+                  setShowOnlyTimers(true)
+                  handleRun()
+                }}
+              >
+                Run (Timers)
+              </Button>
+
+              <Button
+                variant="outlined"
+                onClick={async () => {
+                  batchRun()
+                }}
+              >
+                Batch Run
               </Button>
 
               <Button
@@ -701,25 +813,33 @@ const DevPage = () => {
                 ))}
               </Select>
 
-              {/* WASM Output */}
+              {/* WASM Output / Timer */}
               <TextField
                 fullWidth
                 multiline
                 rows={8}
                 variant="outlined"
                 InputProps={{ readOnly: true }}
-                value={outputValue[selectedOutput]?.data ?? ''}
+                value={
+                  showOnlyTimers
+                    ? (wasmTime > 0 ? `Browser took ${wasmTime} ms` : '')
+                    : (outputValue[selectedOutput]?.data ?? '')
+                }
                 sx={{ mt: 1 }}
               />
 
-              {/* Agent Output */}
+              {/* Agent Output / Timer */}
               <TextField
                 fullWidth
                 multiline
                 rows={8}
                 variant="outlined"
                 InputProps={{ readOnly: true }}
-                value={agentOutputValue[selectedOutput]?.data ?? ''}
+                value={
+                  showOnlyTimers
+                    ? (agentTime > 0 ? `Agent took ${agentTime} ms` : '')
+                    : (agentOutputValue[selectedOutput]?.data ?? '')
+                }
                 sx={{ mt: 1 }}
               />
 
@@ -729,7 +849,11 @@ const DevPage = () => {
                 multiline
                 rows={8}
                 variant="outlined"
-                value={diffValue[selectedOutput]?.data ?? ""}
+                value={
+                  showOnlyTimers
+                    ? ''
+                    : (diffValue[selectedOutput]?.data ?? '')
+                }
                 InputProps={{
                   readOnly: true,
                   sx: {
@@ -739,7 +863,6 @@ const DevPage = () => {
                 }}
                 sx={{ mt: 1 }}
               />
-
             </CardContent>
           </Card>
         </Box>
