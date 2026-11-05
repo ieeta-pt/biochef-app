@@ -8,7 +8,7 @@ import { InputWorkflowNode } from './nodes/InputWorkflowNode';
 import { WorkflowEdge } from './nodes/WorkflowEdge';
 import { loadTool, toolHasNoInputs, getTool, runTools, parameterArguments } from '../utils/toolUtils';
 import { NotificationContext } from '../contexts/NotificationContext';
-import { getNodeHandles, isValidWorkflowConnection, prepareWorkflowNodesForExport, prepareWorkflowNodesForLocalStorage } from '../utils/workflowUtils';
+import { getNodeHandles, isValidWorkflowConnection, prepareWorkflowNodesForExport, prepareWorkflowNodesForLocalStorage, workflowHasInputData } from '../utils/workflowUtils';
 import logger from '../utils/logger';
 import { resolveCollisions } from '../utils/resolveNodeCollisions';
 import { getBlob, removeUnreferencedBlobs } from '../utils/blobStore';
@@ -318,11 +318,11 @@ const RecipePanel = forwardRef(({ selectedNode, setSelectedNode, indexLoaded }, 
   };
 
   // Export Workflow
-  const exportWorkflow = useCallback(() => {
-    if (nodes.length === 0) return;
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
 
+  const downloadWorkflow = useCallback((includeData) => {
     const flow = toObject();
-    flow.nodes = prepareWorkflowNodesForExport(flow.nodes);
+    flow.nodes = prepareWorkflowNodesForExport(flow.nodes, { includeData });
     const fileContent = JSON.stringify(flow, null, 2);
 
     const blob = new Blob([fileContent], { type: 'application/json' });
@@ -334,7 +334,17 @@ const RecipePanel = forwardRef(({ selectedNode, setSelectedNode, indexLoaded }, 
     a.click();
 
     URL.revokeObjectURL(url);
-  }, [nodes, toObject]);
+  }, [toObject]);
+
+  const exportWorkflow = useCallback(() => {
+    if (nodes.length === 0) return;
+
+    if (workflowHasInputData(nodes)) {
+      setExportDialogOpen(true);
+    } else {
+      downloadWorkflow(false);
+    }
+  }, [nodes, downloadWorkflow]);
 
   // Import Workflow
   const importWorkflow = useCallback(() => {
@@ -805,6 +815,35 @@ const RecipePanel = forwardRef(({ selectedNode, setSelectedNode, indexLoaded }, 
         </Panel>
 
       </ReactFlow>
+      <Dialog open={exportDialogOpen} onClose={() => setExportDialogOpen(false)}>
+        <DialogTitle>Include your input data?</DialogTitle>
+        <DialogContent>
+          The workflow can be exported with or without the data loaded in its Input nodes.
+          Anyone who opens a file with data can read it.
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setExportDialogOpen(false)}>Cancel</Button>
+          <Button
+            onClick={() => {
+              setExportDialogOpen(false);
+              downloadWorkflow(true);
+            }}
+          >
+            Export with data
+          </Button>
+          <Button
+            variant="contained"
+            autoFocus
+            onClick={() => {
+              setExportDialogOpen(false);
+              downloadWorkflow(false);
+            }}
+          >
+            Export without data
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
         <DialogTitle>Enter Agent URL</DialogTitle>
         <DialogContent>
