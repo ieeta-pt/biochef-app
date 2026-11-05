@@ -345,6 +345,29 @@ function validateList(content) {
   });
 }
 
+// bgt's Flat Metadata Format: per line a name, then tab-separated
+// key:type:value fields, type Z (text), f (number) or i (integer). A file
+// without any field is a plain list of names.
+function validateFmf(content) {
+  if (!content || !content.trim()) return false;
+
+  let hasField = false;
+  for (const line of content.trim().split('\n')) {
+    const [name, ...fields] = line.replace(/\r$/, '').split('\t');
+    if (!name) return false;
+
+    for (const field of fields) {
+      const match = /^([^:]+):([Zfi]):(.*)$/.exec(field);
+      if (!match) return false;
+      const [, , kind, value] = match;
+      if (kind === 'i' && !/^[+-]?\d+$/.test(value)) return false;
+      if (kind === 'f' && !/^[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?$/.test(value)) return false;
+      hasField = true;
+    }
+  }
+  return hasField;
+}
+
 function validateSam(content) {
   if (!content) {
     return false;
@@ -400,6 +423,63 @@ function validateBinWithMagic(content, magic) {
   return true
 }
 
+// A tar (POSIX ustar): 512-byte headers with "ustar" at offset 257, each
+// followed by its file padded to 512 bytes, ended by an empty block.
+// Returns the names of its files, or null when it is not a well-formed tar.
+// Extended headers (pax) and the ._ files macOS adds are left out; a pax
+// header that renames or resizes a file makes it not a plain tar.
+function tarMembers(content) {
+  if (!content || content.length < 512) return null;
+
+  const text = (start, length) => {
+    let end = start;
+    while (end < start + length && content[end]) end++;
+    return String.fromCharCode(...content.subarray(start, end));
+  };
+  const octal = (start, length) => {
+    const field = text(start, length).trim();
+    return /^[0-7]+$/.test(field) ? parseInt(field, 8) : NaN;
+  };
+
+  const names = [];
+  let offset = 0;
+  while (offset + 512 <= content.length) {
+    const header = content.subarray(offset, offset + 512);
+    if (header.every(byte => byte === 0)) return names;
+    if (text(offset + 257, 5) !== 'ustar') return null;
+
+    let sum = 0;
+    for (let i = 0; i < 512; i++) sum += i >= 148 && i < 156 ? 32 : header[i];
+    if (octal(offset + 148, 8) !== sum) return null;
+
+    const size = octal(offset + 124, 12);
+    if (Number.isNaN(size) || offset + 512 + size > content.length) return null;
+
+    const type = String.fromCharCode(header[156]);
+    if (type === '0' || header[156] === 0) {
+      const name = text(offset, 100);
+      if (header[345] || !name.startsWith('._')) names.push(header[345] ? text(offset + 345, 155) + '/' + name : name);
+    } else if (type === 'x' || type === 'g') {
+      const records = String.fromCharCode(...content.subarray(offset + 512, offset + 512 + size));
+      if (/(^|\n)\d+ (path|linkpath|size|GNU\.sparse[^=]*)=/.test(records)) return null;
+    } else {
+      return null;
+    }
+    offset += 512 + Math.ceil(size / 512) * 512;
+  }
+  return null;
+}
+
+// A BGT database (bgt): a tar holding exactly the four files bgt import
+// writes, named as BioChef's bgt operations name them.
+const BGT_MEMBERS = ['bgt.bcf', 'bgt.bcf.csi', 'bgt.pbf', 'bgt.spl'];
+
+function validateBgt(content) {
+  const names = tarMembers(content);
+  return !!names && names.length === BGT_MEMBERS.length
+    && BGT_MEMBERS.every(member => names.includes(member));
+}
+
 function validateBam(content) {
   return validateBinWithMagic(content, BINARY_MAGIC.BAM) || validateBinWithMagic(content, BINARY_MAGIC.BGZF)
 }
@@ -438,6 +518,104 @@ function validateCsi(content) {
 
 function validateBcf(content) {
   return validateBinWithMagic(content, BINARY_MAGIC.BCF) || validateBinWithMagic(content, BINARY_MAGIC.BGZF)
+}
+
+// The lines of a tab-separated table, split, when each has the given number
+// of fields, none empty. Lines that start with # are comments.
+function tabRows(content, columns) {
+  if (!content || !content.trim()) return null;
+  const rows = [];
+  for (const raw of content.trim().split('\n')) {
+    const line = raw.replace(/\r$/, '');
+    if (!line || line.startsWith('#')) continue;
+    const fields = line.split('\t');
+    if (fields.length !== columns || !fields.every(field => field.trim())) return null;
+    rows.push(fields);
+  }
+  return rows.length ? rows : null;
+}
+
+// The lines of an NCBI .dmp file, split at | and trimmed, without the empty
+// field after the last |
+function dmpRows(content) {
+  if (!content || !content.trim()) return null;
+  const rows = [];
+  for (const raw of content.trim().split('\n')) {
+    const line = raw.replace(/\r$/, '');
+    if (!line || line.startsWith('#')) continue;
+    const fields = line.split('|').map(field => field.trim());
+    if (fields.length > 1 && fields[fields.length - 1] === '') fields.pop();
+    rows.push(fields);
+  }
+  return rows.length ? rows : null;
+}
+
+const isDigits = text => /^\d+$/.test(text);
+
+// A sequence ID and a taxonomic ID per line
+function validateTaxidMap(content) {
+  const rows = tabRows(content, 2);
+  return !!rows && rows.every(([id, taxid]) => /^\S+$/.test(id) && isDigits(taxid));
+}
+
+// nodes.dmp: a taxonomic ID, its parent and its rank, then any others
+function validateNcbiNodes(content) {
+  const rows = dmpRows(content);
+  return !!rows && rows.every(row => row.length >= 3 && isDigits(row[0]) && isDigits(row[1]) && !!row[2]);
+}
+
+// names.dmp: a taxonomic ID, a name, a unique form of it, a class
+function validateNcbiNames(content) {
+  const rows = dmpRows(content);
+  return !!rows && rows.every(row => row.length === 4 && isDigits(row[0]) && !!row[1] && !!row[3]);
+}
+
+// A taxonomic ID and a name per line
+function validateTaxidNames(content) {
+  const rows = tabRows(content, 2);
+  return !!rows && rows.every(([taxid]) => isDigits(taxid));
+}
+
+// A taxonomic ID and a genome size per line
+function validateTaxidSizes(content) {
+  const rows = tabRows(content, 2);
+  return !!rows && rows.every(([taxid, size]) => isDigits(taxid) && isDigits(size));
+}
+
+// A Centrifuge index: a tar holding exactly the four files centrifuge-build
+// writes, named as BioChef's centrifuge operations name them.
+const CENTRIFUGE_INDEX_MEMBERS = ['ref.1.cf', 'ref.2.cf', 'ref.3.cf', 'ref.4.cf'];
+
+function validateCentrifugeIndex(content) {
+  const names = tarMembers(content);
+  return !!names && names.length === CENTRIFUGE_INDEX_MEMBERS.length
+    && CENTRIFUGE_INDEX_MEMBERS.every(member => names.includes(member));
+}
+
+const CENTRIFUGE_COLUMNS = ['readID', 'seqID', 'taxID', 'taxLevel', 'taxRank', 'taxName', 'score', '2ndBestScore',
+  'hitLength', 'queryLength', 'numMatches', 'readSeq', 'readQual'];
+
+// Centrifuge's classifications: a header of its columns, then lines with as
+// many fields
+function validateCentrifugeClassification(content) {
+  if (!content || !content.trim()) return false;
+  const lines = content.replace(/^\n+|\n+$/g, '').split('\n').map(line => line.replace(/\r$/, ''));
+  const header = lines[0].split('\t');
+  return header.every(column => CENTRIFUGE_COLUMNS.includes(column))
+    && lines.slice(1).every(line => line.split('\t').length === header.length);
+}
+
+// Centrifuge's report: name, taxID, taxRank, genomeSize, numReads,
+// numUniqueReads, abundance
+function validateCentrifugeReport(content) {
+  if (!content || !content.trim()) return false;
+  const lines = content.replace(/^\n+|\n+$/g, '').split('\n').map(line => line.replace(/\r$/, ''));
+  if (lines[0] !== 'name\ttaxID\ttaxRank\tgenomeSize\tnumReads\tnumUniqueReads\tabundance') return false;
+  return lines.slice(1).every(line => {
+    const f = line.split('\t');
+    return f.length === 7 && [f[1], f[3], f[4], f[5]].every(isDigits)
+      && /^[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?$/.test(f[6]);
+  });
 }
 
 function validateNewick(content) {
@@ -556,13 +734,23 @@ const validators = {
   rgfa: validateRgfa,
   gfa: validateGfa,
   wig: validateWig,
+  taxidMap: validateTaxidMap,
+  ncbiNodes: validateNcbiNodes,
+  ncbiNames: validateNcbiNames,
+  taxidNames: validateTaxidNames,
+  taxidSizes: validateTaxidSizes,
+  centrifugeIndex: validateCentrifugeIndex,
+  centrifugeClassification: validateCentrifugeClassification,
+  centrifugeReport: validateCentrifugeReport,
   clustal: validateClustal,
   snd: validateSnd,
   bigbed: validateBigBed,
   bigwig: validateBigWig,
   fmd: validateFmd,
   yak: validateYak,
+  bgt: validateBgt,
   vcf: validateVcf,
+  fmf: validateFmf,
   list: validateList,
   sam: validateSam,
   bam: validateBam,
@@ -625,6 +813,9 @@ function matchType(dataValue, { allowed = [], returnAll = false }) {
 
 export function detectIsBinaryFile(bytes) {
   if (!bytes || !bytes.length) return false;
+
+  // A tar, even one cut short: "ustar" in its first header
+  if (bytes.length >= 262 && String.fromCharCode(...bytes.subarray(257, 262)) === 'ustar') return true;
 
   for (const magic of Object.values(BINARY_MAGIC)) {
     if (bytes.length < magic.length) continue;
