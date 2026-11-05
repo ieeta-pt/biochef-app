@@ -440,6 +440,81 @@ function validateBcf(content) {
   return validateBinWithMagic(content, BINARY_MAGIC.BCF) || validateBinWithMagic(content, BINARY_MAGIC.BGZF)
 }
 
+// Long reads in FASTA or FASTQ: one or more reads of unique names, each of
+// one or more letters, with as many qualities as bases in FASTQ
+function validateLongReads(content) {
+  if (typeof content !== 'string') return false;
+  const lines = content.split('\n').map(line => line.replace(/\r$/, ''));
+  const names = new Set();
+  let i = 0;
+  while (i < lines.length) {
+    if (!lines[i].trim()) {
+      i++;
+      continue;
+    }
+    const header = lines[i];
+    const fastq = header.startsWith('@');
+    const name = header.slice(1).trim().split(/\s+/)[0];
+    if (!'>@'.includes(header[0]) || !name || names.has(name)) return false;
+    names.add(name);
+    i++;
+    let bases = 0;
+    while (i < lines.length && !/^[>@]/.test(lines[i]) && !(fastq && lines[i].startsWith('+'))) {
+      if (lines[i] && !/^[A-Za-z]+$/.test(lines[i])) return false;
+      bases += lines[i].length;
+      i++;
+    }
+    if (!bases) return false;
+    if (fastq) {
+      if (i === lines.length || !lines[i].startsWith('+')) return false;
+      i++;
+      let qualities = 0;
+      while (i < lines.length && qualities < bases) {
+        if (!/^[\x21-\x7E]*$/.test(lines[i])) return false;
+        qualities += lines[i].length;
+        i++;
+      }
+      if (qualities !== bases) return false;
+    }
+  }
+  return names.size > 0;
+}
+
+// Overlaps between reads in PAF: 12 or more tab-separated columns, with each
+// match within its reads, and the same length for a read throughout
+function validateReadOverlaps(content) {
+  if (typeof content !== 'string') return false;
+  const lengths = new Map();
+  let records = 0;
+  for (const raw of content.split('\n')) {
+    const line = raw.replace(/\r$/, '');
+    if (!line.trim()) continue;
+    const fields = line.split('\t');
+    if (fields.length < 12 || !['+', '-'].includes(fields[4])) return false;
+    const columns = [1, 2, 3, 6, 7, 8, 9, 10, 11];
+    if (!columns.every(i => /^[0-9]+$/.test(fields[i]))) return false;
+    const [ql, qs, qe, tl, ts, te, matches, block, mapq] = columns.map(i => Number(fields[i]));
+    if (!(ql > 0 && qs <= qe && qe <= ql && tl > 0 && ts <= te && te <= tl && matches <= block && mapq <= 255)) return false;
+    for (const [name, length] of [[fields[0], ql], [fields[5], tl]]) {
+      if (!/^[\x21-\x7E]+$/.test(name)) return false;
+      if (!lengths.has(name)) lengths.set(name, length);
+      else if (lengths.get(name) !== length) return false;
+    }
+    records++;
+  }
+  return records > 0;
+}
+
+// Encapsulated PostScript: the EPSF header, then a bounding box
+function validateEps(content) {
+  if (typeof content !== 'string') return false;
+  const lines = content.split('\n');
+  if (!/^%!PS-Adobe-[0-9.]+ EPSF-[0-9.]+\r?$/.test(lines[0])) return false;
+  const number = String.raw`\s+-?[0-9]+(?:\.[0-9]*)?(?:[eE][+-]?[0-9]+)?`;
+  const box = new RegExp(`^%%BoundingBox:${number.repeat(4)}\\s*$`);
+  return lines.slice(1).some(line => box.test(line));
+}
+
 function validateNewick(content) {
   if (typeof content !== 'string') return false;
   if (content.startsWith('\uFEFF')) content = content.slice(1);
@@ -572,6 +647,9 @@ const validators = {
   csi: validateCsi,
   bcf: validateBcf,
   newick: validateNewick,
+  longReads: validateLongReads,
+  readOverlaps: validateReadOverlaps,
+  eps: validateEps,
   fai: validateFai,
   json: validateJson,
   text: () => true, // Default fallback for TEXT
