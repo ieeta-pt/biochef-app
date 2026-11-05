@@ -125,6 +125,15 @@ export const typeDefinitions = [
     example: 'seq\t.\tgene\t1\t30\t.\t+\t.\tID=gene1\nseq\t.\tmRNA\t1\t30\t.\t+\t.\tID=tx1;Parent=gene1\nseq\t.\texon\t1\t30\t.\t+\t.\tParent=tx1\nseq\t.\tCDS\t1\t30\t.\t+\t0\tParent=tx1',
   },
   {
+    id: 'GVCF',
+    validator: 'gvcf',
+    defaultExtension: '.g.vcf',
+    scriptExtension: 'g.vcf',
+    uploadExtensions: ['.vcf', '.gvcf'],
+    edgeColor: '#8e7cf0',
+    example: '##fileformat=VCFv4.2\n##ALT=<ID=*,Description="Represents allele(s) other than observed.">\n##contig=<ID=seq,length=98>\n##INFO=<ID=END,Number=1,Type=Integer,Description="End position of the reference block">\n##INFO=<ID=MIN_DP,Number=1,Type=Integer,Description="Minimum depth in the reference block">\n##FILTER=<ID=PASS,Description="All filters passed">\n##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">\n##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read depth">\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tsample\nseq\t1\t.\tT\t<*>\t.\t.\tEND=9;MIN_DP=2\tGT:DP\t0/0:2\nseq\t10\t.\tC\tA,<*>\t60\tPASS\t.\tGT:DP\t0/1:2\nseq\t11\t.\tC\t<*>\t.\t.\tEND=98;MIN_DP=1\tGT:DP\t0/0:1',
+  },
+  {
     id: 'VCF',
     validator: 'vcf',
     defaultExtension: '.vcf',
@@ -140,6 +149,17 @@ export const typeDefinitions = [
     uploadExtensions: ['.lst', '.list'],
     edgeColor: '#7f8c8d',
     example: 'seq\nseq1\nseq2',
+  },
+  {
+    id: 'SAMPLE_LIST',
+    validator: 'sampleList',
+    defaultExtension: '.txt',
+    uploadExtensions: ['.txt', '.lst', '.list'],
+    edgeColor: '#95a5a6',
+    example: 'sample',
+    // A list of names looks like much plain text, so it is only chosen
+    // where a list of samples is expected
+    onlyWhenExpected: true,
   },
   {
     id: 'JSON',
@@ -196,6 +216,38 @@ export const typeDefinitions = [
     defaultExtension: '.bcf',
     uploadExtensions: ['.bcf'],
     edgeColor: '#059400',
+    format: 'binary'
+  },
+  {
+    id: 'TBI',
+    validator: 'tbi',
+    defaultExtension: '.tbi',
+    uploadExtensions: ['.tbi'],
+    edgeColor: '#a1887f',
+    format: 'binary'
+  },
+  {
+    id: 'GVCF_GZ',
+    validator: 'gvcfGz',
+    defaultExtension: '.g.vcf.gz',
+    uploadExtensions: ['.gz', '.g.vcf.gz'],
+    edgeColor: '#7e57c2',
+    format: 'binary'
+  },
+  {
+    id: 'VCF_GZ',
+    validator: 'vcfGz',
+    defaultExtension: '.vcf.gz',
+    uploadExtensions: ['.gz', '.vcf.gz'],
+    edgeColor: '#5e35b1',
+    format: 'binary'
+  },
+  {
+    id: 'BGZF',
+    validator: 'bgzf',
+    defaultExtension: '.gz',
+    uploadExtensions: ['.gz', '.bgz'],
+    edgeColor: '#78909c',
     format: 'binary'
   },
   {
