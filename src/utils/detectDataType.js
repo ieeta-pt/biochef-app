@@ -111,6 +111,23 @@ function validateBin(content) {
   return lines.every(line => /^[01]+$/.test(line.trim()));
 }
 
+// gto_comparative_map's positions file: a "#SCF" line with the number of bases
+// of the target and of the reference, then one line per region, a name and four
+// positions in the target and a name and four positions in the reference,
+// separated by whitespace
+function validatePos(content) {
+  if (!content?.trim()) return false;
+  const [header, ...regions] = content.trim().split(/\r?\n/);
+  const head = header.trim().split(/\s+/);
+  if (head.length !== 3 || !head[0].startsWith('#SCF')) return false;
+  if (!head.slice(1).every(f => /^-?\d+$/.test(f))) return false;
+  return regions.every(line => {
+    const fields = line.trim().split(/\s+/);
+    return fields.length === 10
+      && [...fields.slice(1, 5), ...fields.slice(6, 10)].every(f => /^-?\d+$/.test(f));
+  });
+}
+
 function validateBed(content) {
   if (!content) return false;
   const lines = content.trim().split('\n');
@@ -548,6 +565,7 @@ const validators = {
   dna: validateDNA,
   rna: validateRNA,
   aminoAcids: validateAminoAcids,
+  pos: validatePos,
   bed: validateBed,
   gff: validateGff,
   gtf: validateGtf,
