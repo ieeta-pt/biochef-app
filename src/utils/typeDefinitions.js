@@ -134,6 +134,22 @@ export const typeDefinitions = [
     example: '##fileformat=VCFv4.2\n##contig=<ID=seq,length=98>\n##FILTER=<ID=PASS,Description="All filters passed">\n##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tsample\nseq\t10\t.\tC\tA\t60\tPASS\t.\tGT\t0/1',
   },
   {
+    id: 'PSMC',
+    validator: 'psmc',
+    defaultExtension: '.psmc',
+    uploadExtensions: ['.psmc'],
+    edgeColor: '#546e7a',
+    example: 'CC\nCC\tBrief Description of the file format:\nCC\t  CC  comments\nCC\t  MM  useful-messages\nCC\t  RD  round-of-iterations\nCC\t  LL  \\log[P(sequence)]\nCC\t  QD  Q-before-opt Q-after-opt\nCC\t  TR  \\theta_0 \\rho_0\nCC\t  RS  k t_k \\lambda_k \\pi_k \\sum_{l\\not=k}A_{kl} A_{kk}\nCC\t  DC  begin end best-k t_k+\\Delta_k max-prob\nCC\nMM\tVersion: 0.6.5-r74-dirty\nMM\tpattern:1+1+1+1, n:3, n_free_lambdas:4\nMM\tn_iterations:1, skip:1, max_t:15, theta/rho:4\nMM\tis_decoding:0\nMM\tn_seqs:1, sum_L:65, sum_n:3\nRD\t0\nLK\t0.000000\nQD\t0.000000 -> 0.000000\nRI\tinf\nTR\t0.047253\t0.011813\nMT\t15.000000\nMM\tC_pi: 1.000000, n_recomb: 0.763351\nRS\t0\t0.000000\t1.000000\t0.266770\t0.349472\t0.000000\nRS\t1\t0.432507\t1.000000\t0.446281\t0.584634\t0.000000\nRS\t2\t2.735641\t1.000000\t0.050300\t0.065894\t0.000000\nRS\t3\t15.000000\t1.000000\t0.000000\t0.000000\t0.000000\nPA\t1+1+1+1 0.047252885 0.011813221 15.000000000 1.000000000 1.000000000 1.000000000 1.000000000\n//\nIT\t50008\nRD\t1\nLK\t-12.748373\nQD\t-0.304372 -> -0.072240\nRI\t0.0011439472\nTR\t1.418623\t0.775098\nMT\t0.104141\nMM\tC_pi: 0.034110, n_recomb: 1.696070\nRS\t0\t0.000000\t0.440567\t0.099501\t0.058666\t0.068804\nRS\t1\t0.026856\t0.008736\t1.563930\t0.922091\t0.915310\nRS\t2\t0.060924\t0.000175\t0.032638\t0.019244\t0.015886\nRS\t3\t0.104141\t0.033600\t0.000000\t0.000000\t0.000000\nPA\t1+1+1+1 1.418623375 0.775097807 0.104141235 0.440567017 0.008735657 0.000175476 0.033599854\n//',
+  },
+  {
+    id: 'PSMC_PARAMS',
+    validator: 'psmcParams',
+    defaultExtension: '.par',
+    uploadExtensions: ['.par'],
+    edgeColor: '#78909c',
+    example: '4+5*3+4 0.274400271 0.007093592 2.260467171 1685167.091007381 0.098469252 76061.673035966 3.400960683 0.033475147 0.001966313 0.001944450',
+  },
+  {
     id: 'LIST',
     validator: 'list',
     defaultExtension: '.lst',
@@ -243,6 +259,14 @@ export const typeDefinitions = [
     defaultExtension: '.yak',
     uploadExtensions: ['.yak'],
     edgeColor: '#5d4037',
+    format: 'binary'
+  },
+  {
+    id: 'PSMC_CPG',
+    validator: 'psmcCpg',
+    defaultExtension: '.cpg',
+    uploadExtensions: ['.cpg'],
+    edgeColor: '#a1887f',
     format: 'binary'
   },
   {
