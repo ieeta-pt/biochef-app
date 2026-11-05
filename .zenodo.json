@@ -1,0 +1,20 @@
+{
+  "title": "BioChef",
+  "upload_type": "software",
+  "description": "<p>BioChef is a visual workflow builder for genomics that runs bioinformatics tools in the browser with WebAssembly, so data never has to leave the user's computer.</p>",
+  "creators": [
+    { "name": "Rosa, Joaquim", "affiliation": "IEETA, University of Aveiro" },
+    { "name": "Andrade, João", "affiliation": "IEETA, University of Aveiro" },
+    { "name": "Silva, Jorge Miguel", "affiliation": "IEETA, University of Aveiro", "orcid": "0000-0002-6331-6091" },
+    { "name": "Reis, Miguel", "affiliation": "IEETA, University of Aveiro" },
+    { "name": "Oliveira, José Luís", "affiliation": "IEETA, University of Aveiro", "orcid": "0000-0002-6672-6176" }
+  ],
+  "license": "Apache-2.0",
+  "keywords": ["genomics", "bioinformatics", "workflows", "WebAssembly", "privacy"],
+  "related_identifiers": [
+    { "identifier": "10.1186/s12859-026-06431-1", "relation": "isDocumentedBy", "scheme": "doi" },
+    { "identifier": "https://bio.tools/biochef", "relation": "isIdenticalTo", "scheme": "url" },
+    { "identifier": "https://biochef.app", "relation": "isSupplementedBy", "scheme": "url" }
+  ],
+  "grants": [{ "id": "10.13039/501100000780::101081813" }]
+}

@@ -1,0 +1,55 @@
+cff-version: 1.2.0
+message: "If you use BioChef, please cite the article below."
+title: "BioChef"
+type: software
+abstract: "A visual workflow builder for genomics that runs bioinformatics tools in the browser with WebAssembly, so data never has to leave the user's computer."
+authors:
+  - given-names: Joaquim
+    family-names: Rosa
+    affiliation: "IEETA, University of Aveiro"
+  - given-names: João
+    family-names: Andrade
+    affiliation: "IEETA, University of Aveiro"
+  - given-names: Jorge Miguel
+    family-names: Silva
+    affiliation: "IEETA, University of Aveiro"
+    orcid: "https://orcid.org/0000-0002-6331-6091"
+  - given-names: Miguel
+    family-names: Reis
+    affiliation: "IEETA, University of Aveiro"
+  - given-names: José Luís
+    family-names: Oliveira
+    affiliation: "IEETA, University of Aveiro"
+    orcid: "https://orcid.org/0000-0002-6672-6176"
+repository-code: "https://github.com/ieeta-pt/biochef-app"
+url: "https://biochef.app"
+license: Apache-2.0
+keywords:
+  - genomics
+  - bioinformatics
+  - workflows
+  - WebAssembly
+  - privacy
+identifiers:
+  - type: url
+    value: "https://bio.tools/biochef"
+    description: "bio.tools entry"
+preferred-citation:
+  type: article
+  title: "Biochef: a client-side WebAssembly-based workflow builder for genomic data analysis"
+  authors:
+    - given-names: Joaquim
+      family-names: Rosa
+    - given-names: João
+      family-names: Andrade
+    - given-names: Jorge Miguel
+      family-names: Silva
+      orcid: "https://orcid.org/0000-0002-6331-6091"
+    - given-names: José Luís
+      family-names: Oliveira
+      orcid: "https://orcid.org/0000-0002-6672-6176"
+  journal: "BMC Bioinformatics"
+  volume: 27
+  start: 103
+  year: 2026
+  doi: "10.1186/s12859-026-06431-1"

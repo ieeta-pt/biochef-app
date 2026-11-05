@@ -18,8 +18,7 @@ import {
     Typography
 } from '@mui/material';
 import React, { useContext, useEffect, useState } from 'react';
-import { getTool } from '../utils/toolUtils';
-import { DataTypeContext } from '../contexts/DataTypeContext';
+import { getTool, parameterArguments } from '../utils/toolUtils';
 import { NotificationContext } from '../contexts/NotificationContext';
 import { runTools } from '../utils/toolUtils';
 import { detectDataType } from '../utils/detectDataType';
@@ -33,7 +32,6 @@ const ToolTestingPanel = ({ tool, inputData, setOutputData, setIsLoading }) => {
     const [parameters, setParameters] = useState({});   // To store parameters
     const [helpMessages, setHelpMessages] = useState({}); // To store help messages
     const [toolParameterFiles, setToolParameterFiles] = useState({}); // To store tool parameter files
-    const { validateData } = useContext(DataTypeContext);
     const { tourRegisterSteps, tourStart, tourMoveNext, tourIsActive } = useContext(TourContext);
 
     // Find tool configuration and supported input formats
@@ -113,7 +111,7 @@ const ToolTestingPanel = ({ tool, inputData, setOutputData, setIsLoading }) => {
         let paramValue = value;
 
         if (value instanceof File) {
-            const processedFile = await processFile(value, validateData, showNotification);
+            const processedFile = await processFile(value, showNotification);
             if (!processedFile) return;
 
             paramValue = processedFile.name;
@@ -164,7 +162,6 @@ const ToolTestingPanel = ({ tool, inputData, setOutputData, setIsLoading }) => {
 
             const toolConfig = getTool(tool.name)
             if (!toolConfig) {
-                showNotification(`Configuration for tool ${tool.name} not found.`, 'error');
                 throw new Error(`Configuration for tool ${tool.name} not found.`);
             }
 
@@ -172,9 +169,10 @@ const ToolTestingPanel = ({ tool, inputData, setOutputData, setIsLoading }) => {
             let args = [];
             toolConfig.parameters.forEach((param) => {
                 if (param.required || parameters[param.name].enabled) {
-                    if (param.flag) args.push(param.flag);
-                    if (param.type != "flag") {
-                        args.push(parameters[param.name].value);
+                    if (param.type == "flag") {
+                        if (param.flag) args.push(param.flag);
+                    } else {
+                        args.push(...parameterArguments(param.flag, parameters[param.name].value));
                     }
                 }
             });
@@ -238,6 +236,7 @@ const ToolTestingPanel = ({ tool, inputData, setOutputData, setIsLoading }) => {
 
         } catch (error) {
             console.error(`Failed to execute tool ${tool.name}:`, error);
+            showNotification(`Could not run ${tool.name}: ${error.message}`, 'error');
             throw error;
         }
     };

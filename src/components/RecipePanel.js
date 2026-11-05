@@ -6,7 +6,7 @@ import { WorkflowNode } from './nodes/WorkflowNode';
 import { OutputWorkflowNode } from './nodes/OutputWorkflowNode';
 import { InputWorkflowNode } from './nodes/InputWorkflowNode';
 import { WorkflowEdge } from './nodes/WorkflowEdge';
-import { loadTool, toolHasNoInputs, getTool, runTools, getToolRuntimes } from '../utils/toolUtils';
+import { loadTool, toolHasNoInputs, getTool, runTools, getToolRuntimes, parameterArguments } from '../utils/toolUtils';
 import { NotificationContext } from '../contexts/NotificationContext';
 import { getNodeHandles, isValidWorkflowConnection, prepareWorkflowNodesForExport, prepareWorkflowNodesForLocalStorage } from '../utils/workflowUtils';
 import logger from '../utils/logger';
@@ -599,9 +599,8 @@ const RecipePanel = forwardRef(({ selectedNode, setSelectedNode, indexLoaded }, 
         if (param.type === 'flag') {
           args.push(param.flag);
         }
-        else if (value) {
-          if (param.flag) args.push(param.flag)
-          args.push(value);
+        else if (value !== undefined && value !== null && value !== '') {
+          args.push(...parameterArguments(param.flag, value));
         }
       });
 
@@ -624,37 +623,47 @@ const RecipePanel = forwardRef(({ selectedNode, setSelectedNode, indexLoaded }, 
       }
     }
 
-    const { outputs, errors } = await runTools(
-      toolInvocations,
-      (nodeId, outputs, errors) => {
-        const messages = {
-          ...(getNode(nodeId).data.toolMessages ?? {}),
-          "Output": {},
-        };
+    try {
+      const { outputs, errors } = await runTools(
+        toolInvocations,
+        (nodeId, outputs, errors) => {
+          const messages = {
+            ...(getNode(nodeId).data.toolMessages ?? {}),
+            "Output": {},
+          };
 
-        const error = errors.join("\n")
-        if (error) {
-          const stderrLines = error.split('\n').map(line => line.trim()).filter(Boolean);
+          const error = errors.join("\n")
+          if (error) {
+            const stderrLines = error.split('\n').map(line => line.trim()).filter(Boolean);
 
-          const hasOutput = Object.values(outputs).some(
-            value => value !== undefined && value !== null && value.data !== ''
-          );
-          const failed = error && !hasOutput
+            const hasOutput = Object.values(outputs).some(
+              value => value !== undefined && value !== null && value.data !== ''
+            );
+            const failed = error && !hasOutput
 
-          if (failed) {
-            messages["Output"].error = stderrLines;
-          } else {
-            messages["Output"].info = stderrLines;
+            if (failed) {
+              messages["Output"].error = stderrLines;
+            } else {
+              messages["Output"].info = stderrLines;
+            }
           }
-        }
 
-        updateNodeData(nodeId, {
-          outputs,
-          toolMessages: messages,
-          isRunning: false
-        })
+          updateNodeData(nodeId, {
+            outputs,
+            toolMessages: messages,
+            isRunning: false
+          })
+        }
+      )
+    } catch (error) {
+      console.error("Failed to run the workflow:", error);
+      showNotification(`Could not run the workflow: ${error.message}`, "error");
+      for (const nodeId of component) {
+        if (getNode(nodeId)?.type == "workflowNode") {
+          updateNodeData(nodeId, { isRunning: false })
+        }
       }
-    )
+    }
   }
 
   async function runWorkflowWithAgent(component, url) {

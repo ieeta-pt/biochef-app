@@ -5,7 +5,7 @@ import { getUploadExtensions } from './typeDefinitions';
 export const acceptableExtensions = getUploadExtensions();
 
 // TODO deal with file sizes
-export const processFile = async (file, validateData, showNotification) => {
+export const processFile = async (file, showNotification) => {
     const extension = `.${file.name.split('.').pop().toLowerCase()}`;
     if (!acceptableExtensions.includes(extension)) {
         showNotification(`Unsupported file ${file.name} with type ${extension}.`, 'error');
