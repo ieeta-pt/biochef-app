@@ -134,6 +134,19 @@ export const typeDefinitions = [
     example: '##fileformat=VCFv4.2\n##contig=<ID=seq,length=98>\n##FILTER=<ID=PASS,Description="All filters passed">\n##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tsample\nseq\t10\t.\tC\tA\t60\tPASS\t.\tGT\t0/1',
   },
   {
+    // The extra channel gto_fasta_split_streams writes and
+    // gto_fasta_merge_streams reads: a '>' per record, 0x00 per base in ACGT,
+    // 0x01 per base in acgt, everything else as it was. With GTO_HEADERS'
+    // example and the DNA example as the bases, it merges into two records, the
+    // second ending in ten lowercase bases
+    id: 'GTO_EXTRA',
+    validator: 'gtoExtra',
+    defaultExtension: '.JV2',
+    uploadExtensions: ['.JV2'],
+    edgeColor: '#6d4c41',
+    example: '>' + '\x00'.repeat(49) + '\n>' + '\x00'.repeat(39) + '\x01'.repeat(10),
+  },
+  {
     id: 'LIST',
     validator: 'list',
     defaultExtension: '.lst',
@@ -149,6 +162,18 @@ export const typeDefinitions = [
     uploadExtensions: ['.json', '.jsonl'],
     edgeColor: '#415b54',
     example: '{"samples":[{"id":"sample_1","condition":"control","value":12.5},{"id":"sample_2","condition":"treated","value":18.2}],"metadata":{"organism":"example","assay":"measurement"}}',
+  },
+  {
+    // The headers channel: one FASTA header per line, without '>'
+    id: 'GTO_HEADERS',
+    validator: 'gtoHeaders',
+    defaultExtension: '.JV2',
+    uploadExtensions: ['.JV2'],
+    edgeColor: '#8d6e63',
+    example: 'seq1\nseq2',
+    // Any lines of text are headers, so it is only chosen where headers are
+    // expected
+    onlyWhenExpected: true,
   },
   {
     id: 'TEXT',
