@@ -440,6 +440,31 @@ function validateBcf(content) {
   return validateBinWithMagic(content, BINARY_MAGIC.BCF) || validateBinWithMagic(content, BINARY_MAGIC.BGZF)
 }
 
+// An alignment of coding sequences in FASTA, as HyPhy's codon analyses read
+// it: two or more sequences of unique names, all as long, in whole codons, of
+// nucleotides (IUPAC codes, gaps and missing data)
+const CODON_LINE = /^[ACGTURYSWKMBDHVNacgturyswkmbdhvn?.-]*$/;
+
+function validateCodonAlignment(content) {
+  if (typeof content !== 'string') return false;
+  const names = new Set();
+  const lengths = [];
+  for (const raw of content.split('\n')) {
+    const line = raw.replace(/\r$/, '');
+    if (line.startsWith('>')) {
+      const name = line.slice(1);
+      if (!name.trim() || names.has(name)) return false;
+      names.add(name);
+      lengths.push(0);
+      continue;
+    }
+    if (!line.trim()) continue;
+    if (!lengths.length || !CODON_LINE.test(line)) return false;
+    lengths[lengths.length - 1] += line.length;
+  }
+  return lengths.length >= 2 && lengths[0] > 0 && lengths[0] % 3 === 0 && lengths.every(l => l === lengths[0]);
+}
+
 function validateNewick(content) {
   if (typeof content !== 'string') return false;
   if (content.startsWith('\uFEFF')) content = content.slice(1);
@@ -572,6 +597,7 @@ const validators = {
   csi: validateCsi,
   bcf: validateBcf,
   newick: validateNewick,
+  codonAlignment: validateCodonAlignment,
   fai: validateFai,
   json: validateJson,
   text: () => true, // Default fallback for TEXT
