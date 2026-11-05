@@ -134,6 +134,14 @@ export const typeDefinitions = [
     example: '##fileformat=VCFv4.2\n##contig=<ID=seq,length=98>\n##FILTER=<ID=PASS,Description="All filters passed">\n##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tsample\nseq\t10\t.\tC\tA\t60\tPASS\t.\tGT\t0/1',
   },
   {
+    id: 'FMF',
+    validator: 'fmf',
+    defaultExtension: '.fmf',
+    uploadExtensions: ['.fmf'],
+    edgeColor: '#9575cd',
+    example: 'sample\tsex:Z:F\tdepth:i:30\theight:f:1.65',
+  },
+  {
     id: 'LIST',
     validator: 'list',
     defaultExtension: '.lst',
@@ -243,6 +251,30 @@ export const typeDefinitions = [
     defaultExtension: '.yak',
     uploadExtensions: ['.yak'],
     edgeColor: '#5d4037',
+    format: 'binary'
+  },
+  {
+    id: 'BGT',
+    validator: 'bgt',
+    defaultExtension: '.bgt',
+    uploadExtensions: ['.bgt', '.tar'],
+    edgeColor: '#4a148c',
+    format: 'binary'
+  },
+  {
+    id: 'BWA_INDEX',
+    validator: 'bwaIndex',
+    defaultExtension: '.bwa',
+    uploadExtensions: ['.bwa', '.tar'],
+    edgeColor: '#bf360c',
+    format: 'binary'
+  },
+  {
+    id: 'SAI',
+    validator: 'sai',
+    defaultExtension: '.sai',
+    uploadExtensions: ['.sai'],
+    edgeColor: '#e64a19',
     format: 'binary'
   },
   {
