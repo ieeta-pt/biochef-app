@@ -345,6 +345,29 @@ function validateList(content) {
   });
 }
 
+// bgt's Flat Metadata Format: per line a name, then tab-separated
+// key:type:value fields, type Z (text), f (number) or i (integer). A file
+// without any field is a plain list of names.
+function validateFmf(content) {
+  if (!content || !content.trim()) return false;
+
+  let hasField = false;
+  for (const line of content.trim().split('\n')) {
+    const [name, ...fields] = line.replace(/\r$/, '').split('\t');
+    if (!name) return false;
+
+    for (const field of fields) {
+      const match = /^([^:]+):([Zfi]):(.*)$/.exec(field);
+      if (!match) return false;
+      const [, , kind, value] = match;
+      if (kind === 'i' && !/^[+-]?\d+$/.test(value)) return false;
+      if (kind === 'f' && !/^[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?$/.test(value)) return false;
+      hasField = true;
+    }
+  }
+  return hasField;
+}
+
 function validateSam(content) {
   if (!content) {
     return false;
@@ -398,6 +421,63 @@ function validateBinWithMagic(content, magic) {
   }
 
   return true
+}
+
+// A tar (POSIX ustar): 512-byte headers with "ustar" at offset 257, each
+// followed by its file padded to 512 bytes, ended by an empty block.
+// Returns the names of its files, or null when it is not a well-formed tar.
+// Extended headers (pax) and the ._ files macOS adds are left out; a pax
+// header that renames or resizes a file makes it not a plain tar.
+function tarMembers(content) {
+  if (!content || content.length < 512) return null;
+
+  const text = (start, length) => {
+    let end = start;
+    while (end < start + length && content[end]) end++;
+    return String.fromCharCode(...content.subarray(start, end));
+  };
+  const octal = (start, length) => {
+    const field = text(start, length).trim();
+    return /^[0-7]+$/.test(field) ? parseInt(field, 8) : NaN;
+  };
+
+  const names = [];
+  let offset = 0;
+  while (offset + 512 <= content.length) {
+    const header = content.subarray(offset, offset + 512);
+    if (header.every(byte => byte === 0)) return names;
+    if (text(offset + 257, 5) !== 'ustar') return null;
+
+    let sum = 0;
+    for (let i = 0; i < 512; i++) sum += i >= 148 && i < 156 ? 32 : header[i];
+    if (octal(offset + 148, 8) !== sum) return null;
+
+    const size = octal(offset + 124, 12);
+    if (Number.isNaN(size) || offset + 512 + size > content.length) return null;
+
+    const type = String.fromCharCode(header[156]);
+    if (type === '0' || header[156] === 0) {
+      const name = text(offset, 100);
+      if (header[345] || !name.startsWith('._')) names.push(header[345] ? text(offset + 345, 155) + '/' + name : name);
+    } else if (type === 'x' || type === 'g') {
+      const records = String.fromCharCode(...content.subarray(offset + 512, offset + 512 + size));
+      if (/(^|\n)\d+ (path|linkpath|size|GNU\.sparse[^=]*)=/.test(records)) return null;
+    } else {
+      return null;
+    }
+    offset += 512 + Math.ceil(size / 512) * 512;
+  }
+  return null;
+}
+
+// A BGT database (bgt): a tar holding exactly the four files bgt import
+// writes, named as BioChef's bgt operations name them.
+const BGT_MEMBERS = ['bgt.bcf', 'bgt.bcf.csi', 'bgt.pbf', 'bgt.spl'];
+
+function validateBgt(content) {
+  const names = tarMembers(content);
+  return !!names && names.length === BGT_MEMBERS.length
+    && BGT_MEMBERS.every(member => names.includes(member));
 }
 
 function validateBam(content) {
@@ -503,6 +583,100 @@ function validateNewick(content) {
   return trees > 0 && depth === 0 && !seenNode;
 }
 
+// velveth's output: a tar holding exactly the two files it writes, under
+// the names velvetg reads them by.
+const VELVET_HASH_MEMBERS = ['Sequences', 'Roadmaps'];
+
+function validateVelvetHash(content) {
+  const names = tarMembers(content);
+  return !!names && names.length === VELVET_HASH_MEMBERS.length
+    && VELVET_HASH_MEMBERS.every(member => names.includes(member));
+}
+
+// The lines of a velvet file, without the newlines at its end
+function velvetLines(content) {
+  if (!content || !content.trim()) return null;
+  return content.replace(/\n+$/, '').split('\n').map(line => line.replace(/\r$/, ''));
+}
+
+// velvetg's stats.txt: a header naming the columns, from ID, lgth, out, in
+// and long_cov, then a row of numbers per node
+function validateVelvetStats(content) {
+  const lines = velvetLines(content);
+  if (!lines) return false;
+  const header = lines[0].split('\t');
+  if (header.slice(0, 5).join('\t') !== 'ID\tlgth\tout\tin\tlong_cov') return false;
+  return lines.slice(1).every(line => {
+    const fields = line.split('\t');
+    return fields.length === header.length && fields.slice(0, 4).every(f => /^\d+$/.test(f))
+      && fields.slice(4).every(f => /^-?(\d+(\.\d*)?|\.\d+)(e[-+]?\d+)?$|^-?(inf|nan)$/i.test(f));
+  });
+}
+
+// velvetg's LastGraph: the numbers of nodes and reads, k (and whether both
+// strands count), then per node a NODE line and its sequence on each
+// strand, and ARC, NR and SEQ lines with the lines of numbers after them
+function validateVelvetGraph(content) {
+  const lines = velvetLines(content);
+  if (!lines) return false;
+  const header = lines[0].split('\t');
+  if ((header.length !== 3 && header.length !== 4) || !header.every(f => /^\d+$/.test(f))) return false;
+  let nodes = 0;
+  for (let i = 1; i < lines.length;) {
+    const fields = lines[i].split('\t');
+    if (fields[0] === 'NODE') {
+      if (fields.length < 4 || !fields.slice(1).every(f => /^-?\d+$/.test(f))) return false;
+      if (i + 2 >= lines.length || !/^[ACGTN]*$/.test(lines[i + 1]) || !/^[ACGTN]*$/.test(lines[i + 2])) return false;
+      nodes++;
+      i += 3;
+    } else if (['ARC', 'NR', 'SEQ'].includes(fields[0]) || /^-?\d+$/.test(fields[0])) {
+      if (fields.length < 2 || !fields.slice(1).every(f => /^-?\d+$/.test(f))) return false;
+      i++;
+    } else {
+      return false;
+    }
+  }
+  return nodes === Number(header[0]);
+}
+
+// An AMOS message file: messages from {XXX to }, which may hold others, with
+// a field per line (name:value) or fields of several lines ending at a line
+// holding a dot
+function validateAfg(content) {
+  const lines = velvetLines(content);
+  if (!lines) return false;
+  let depth = 0, messages = 0, inField = false;
+  for (const line of lines) {
+    if (inField) {
+      inField = line !== '.';
+    } else if (/^\{[A-Z]{3}$/.test(line)) {
+      depth++;
+      messages++;
+    } else if (line === '}') {
+      if (!depth) return false;
+      depth--;
+    } else if (depth && /^[a-z]{3}:/.test(line)) {
+      inField = line.endsWith(':');
+    } else {
+      return false;
+    }
+  }
+  return messages > 0 && depth === 0 && !inField;
+}
+
+// velvetg's contig-alignments.psa: per contig a >contig_ID line, then a line
+// per stretch on a reference: first and last base in the contig, the
+// reference, and first and last base there
+function validateVelvetAlignments(content) {
+  const lines = velvetLines(content);
+  if (!lines || !/^>contig_\d+$/.test(lines[0])) return false;
+  return lines.slice(1).every(line => {
+    if (/^>contig_\d+$/.test(line)) return true;
+    const fields = line.split('\t');
+    return fields.length >= 5 && [...fields.slice(0, 2), ...fields.slice(-2)].every(f => /^-?\d+$/.test(f));
+  });
+}
+
 function validateJson(content) {
   if (!content?.trim()) return false;
 
@@ -562,7 +736,9 @@ const validators = {
   bigwig: validateBigWig,
   fmd: validateFmd,
   yak: validateYak,
+  bgt: validateBgt,
   vcf: validateVcf,
+  fmf: validateFmf,
   list: validateList,
   sam: validateSam,
   bam: validateBam,
@@ -574,6 +750,11 @@ const validators = {
   newick: validateNewick,
   fai: validateFai,
   json: validateJson,
+  velvetHash: validateVelvetHash,
+  velvetStats: validateVelvetStats,
+  velvetGraph: validateVelvetGraph,
+  afg: validateAfg,
+  velvetAlignments: validateVelvetAlignments,
   text: () => true, // Default fallback for TEXT
 };
 
@@ -625,6 +806,9 @@ function matchType(dataValue, { allowed = [], returnAll = false }) {
 
 export function detectIsBinaryFile(bytes) {
   if (!bytes || !bytes.length) return false;
+
+  // A tar, even one cut short: "ustar" in its first header
+  if (bytes.length >= 262 && String.fromCharCode(...bytes.subarray(257, 262)) === 'ustar') return true;
 
   for (const magic of Object.values(BINARY_MAGIC)) {
     if (bytes.length < magic.length) continue;

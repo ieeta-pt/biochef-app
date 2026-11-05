@@ -134,6 +134,14 @@ export const typeDefinitions = [
     example: '##fileformat=VCFv4.2\n##contig=<ID=seq,length=98>\n##FILTER=<ID=PASS,Description="All filters passed">\n##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tsample\nseq\t10\t.\tC\tA\t60\tPASS\t.\tGT\t0/1',
   },
   {
+    id: 'FMF',
+    validator: 'fmf',
+    defaultExtension: '.fmf',
+    uploadExtensions: ['.fmf'],
+    edgeColor: '#9575cd',
+    example: 'sample\tsex:Z:F\tdepth:i:30\theight:f:1.65',
+  },
+  {
     id: 'LIST',
     validator: 'list',
     defaultExtension: '.lst',
@@ -149,6 +157,46 @@ export const typeDefinitions = [
     uploadExtensions: ['.json', '.jsonl'],
     edgeColor: '#415b54',
     example: '{"samples":[{"id":"sample_1","condition":"control","value":12.5},{"id":"sample_2","condition":"treated","value":18.2}],"metadata":{"organism":"example","assay":"measurement"}}',
+  },
+  {
+    id: 'VELVET_HASH',
+    validator: 'velvetHash',
+    defaultExtension: '.velveth',
+    uploadExtensions: ['.velveth', '.tar'],
+    edgeColor: '#4e342e',
+    format: 'binary'
+  },
+  {
+    id: 'VELVET_STATS',
+    validator: 'velvetStats',
+    defaultExtension: '.txt',
+    uploadExtensions: ['.txt', '.tsv'],
+    edgeColor: '#795548',
+    example: 'ID\tlgth\tout\tin\tlong_cov\tshort1_cov\tshort1_Ocov\tshort2_cov\tshort2_Ocov\tlong_nb\tshort1_nb\tshort2_nb\n1\t180\t0\t0\t0.000000\t1.833333\t1.833333\t0.000000\t0.000000\t0\t6\t0',
+  },
+  {
+    id: 'VELVET_GRAPH',
+    validator: 'velvetGraph',
+    defaultExtension: '.lastgraph',
+    uploadExtensions: ['.lastgraph', '.graph'],
+    edgeColor: '#5d4037',
+    example: '1\t7\t21\t1\nNODE\t1\t180\t330\t330\t0\t0\nATACACGTCAGCACGAAACTTGTTGGCCCAGTGTGAATCGCTTAAGGGTTAAGTAAGTGTGATGCATACGCCTTTACTTGCTGTGTCCACCCCATCGGACTGGCATTTTTATTACACTCAGAAACAGAACTCGGGTAATTTTGACAGGTCACGCAGAGGCGCGCCCTCCTGAAGTGCGTG\nGCCTCTGCGTGACCTGTCAAAATTACCCGAGTTCTGTTTCTGAGTGTAATAAAAATGCCAGTCCGATGGGGTGGACACAGCAAGTAAAGGCGTATGCATCACACTTACTTAACCCTTAAGCGATTCACACTGGGCCAACAAGTTTCGTGCTGACGTGTATGTTATGTAATTGTCTTTAGC\nNR\t1\t6\n2\t0\t0\n3\t30\t0\n4\t60\t0\n5\t90\t0\n6\t120\t0\n7\t150\t0',
+  },
+  {
+    id: 'AFG',
+    validator: 'afg',
+    defaultExtension: '.afg',
+    uploadExtensions: ['.afg'],
+    edgeColor: '#bcaaa4',
+    example: '{RED\niid:1\neid:1\nseq:\nGCTAAAGACAATTACATAACATACACGTCAGCACGAAACT\n.\nqlt:\nGCTAAAGACAATTACATAACATACACGTCAGCACGAAACT\n.\n}\n{CTG\niid:1\neid:1-0\nseq:\nGCTAAAGACAATTACATAACATACACGTCAGCACGAAACT\n.\nqlt:\nGCTAAAGACAATTACATAACATACACGTCAGCACGAAACT\n.\n{TLE\nsrc:1\noff:0\nclr:0,40\n}\n}',
+  },
+  {
+    id: 'VELVET_ALIGNMENTS',
+    validator: 'velvetAlignments',
+    defaultExtension: '.psa',
+    uploadExtensions: ['.psa'],
+    edgeColor: '#a1887f',
+    example: '>contig_1\n1\t98\tseq\t1\t98',
   },
   {
     id: 'TEXT',
@@ -243,6 +291,14 @@ export const typeDefinitions = [
     defaultExtension: '.yak',
     uploadExtensions: ['.yak'],
     edgeColor: '#5d4037',
+    format: 'binary'
+  },
+  {
+    id: 'BGT',
+    validator: 'bgt',
+    defaultExtension: '.bgt',
+    uploadExtensions: ['.bgt', '.tar'],
+    edgeColor: '#4a148c',
     format: 'binary'
   },
   {
