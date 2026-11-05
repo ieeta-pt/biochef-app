@@ -440,6 +440,42 @@ function validateBcf(content) {
   return validateBinWithMagic(content, BINARY_MAGIC.BCF) || validateBinWithMagic(content, BINARY_MAGIC.BGZF)
 }
 
+// GeneFuse's fusion file: per gene a line >name,chromosome:start-end, then a
+// line per exon, number,start,end, numbered up by one from 1 or after,
+// within the gene and along it, or the other way when the gene is on the
+// reverse strand; blank lines and lines starting with # aside
+const GENEFUSE_GENE = /^ *> *([ -+\--~]*?) *, *([!-+\--9;-~]+) *: *(\d+) *- *(\d+) *$/;
+const GENEFUSE_EXON = /^ *(\d+) *, *(\d+) *, *(\d+) *$/;
+
+function validateGenefuseCsv(content) {
+  if (typeof content !== 'string') return false;
+  let genes = 0, exons = 0, start = 0, end = 0, reversed = false, previous = null;
+  for (const raw of content.split('\n')) {
+    const line = raw.replace(/\r$/, '');
+    if (!line.replace(/ /g, '') || /^ *#/.test(line)) continue;
+    const gene = GENEFUSE_GENE.exec(line);
+    if (gene) {
+      if (genes && !exons) return false;
+      start = Number(gene[3]);
+      end = Number(gene[4]);
+      if (!gene[1] || gene[1] === 'invalid' || start < 1 || end - start <= 16) return false;
+      genes++;
+      exons = 0;
+      continue;
+    }
+    const exon = GENEFUSE_EXON.exec(line);
+    if (!exon || !genes) return false;
+    const [number, first, last] = exon.slice(1).map(Number);
+    if (first > last || first < start || last > end) return false;
+    if (exons ? number !== previous[0] + 1 : number < 1) return false;
+    if (exons === 1) reversed = first < previous[1];
+    if (exons && (reversed ? last >= previous[1] : first <= previous[2])) return false;
+    previous = [number, first, last];
+    exons++;
+  }
+  return genes > 0 && exons > 0;
+}
+
 function validateNewick(content) {
   if (typeof content !== 'string') return false;
   if (content.startsWith('\uFEFF')) content = content.slice(1);
@@ -572,6 +608,7 @@ const validators = {
   csi: validateCsi,
   bcf: validateBcf,
   newick: validateNewick,
+  genefuseCsv: validateGenefuseCsv,
   fai: validateFai,
   json: validateJson,
   text: () => true, // Default fallback for TEXT
