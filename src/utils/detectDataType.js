@@ -440,6 +440,28 @@ function validateBcf(content) {
   return validateBinWithMagic(content, BINARY_MAGIC.BCF) || validateBinWithMagic(content, BINARY_MAGIC.BGZF)
 }
 
+// One or more SVG documents, each optionally after an XML declaration, a
+// DOCTYPE and comments. nw_display, for one, writes one per tree.
+function validateSvg(content) {
+  let rest = content?.trim();
+  if (!rest) return false;
+  const prolog = /^(<\?xml[^>]*\?>|<!DOCTYPE[^>]*>|<!--[\s\S]*?-->|\s+)*/i;
+  while (rest) {
+    rest = rest.slice(rest.match(prolog)[0].length);
+    if (!/^<svg[\s>]/.test(rest)) return false;
+    let end = rest.indexOf('</svg>');
+    if (end < 0) return false;
+    // a nested <svg> is closed before its parent
+    const count = (text, tag) => text.split(tag).length - 1;
+    while (count(rest.slice(0, end), '<svg') > count(rest.slice(0, end), '</svg>') + 1) {
+      end = rest.indexOf('</svg>', end + 6);
+      if (end < 0) return false;
+    }
+    rest = rest.slice(end + 6).trim();
+  }
+  return true;
+}
+
 function validateNewick(content) {
   if (typeof content !== 'string') return false;
   if (content.startsWith('\uFEFF')) content = content.slice(1);
@@ -572,6 +594,7 @@ const validators = {
   csi: validateCsi,
   bcf: validateBcf,
   newick: validateNewick,
+  svg: validateSvg,
   fai: validateFai,
   json: validateJson,
   text: () => true, // Default fallback for TEXT
