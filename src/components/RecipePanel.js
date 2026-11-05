@@ -805,6 +805,13 @@ const RecipePanel = forwardRef(({ selectedNode, setSelectedNode, indexLoaded }, 
         </Panel>
 
       </ReactFlow>
+      {/* Disabled with the rest of the agent path. The button that opens this
+          dialog is commented out above, and runWorkflowAgent is commented out
+          where it is defined, so this could not be reached -- but it referenced
+          that function from live code, which meant uncommenting the button gave
+          a ReferenceError rather than the feature. All three parts are now
+          disabled together, so re-enabling is one coherent change.
+
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
         <DialogTitle>Enter Agent URL</DialogTitle>
         <DialogContent>
@@ -829,6 +836,7 @@ const RecipePanel = forwardRef(({ selectedNode, setSelectedNode, indexLoaded }, 
           </Button>
         </DialogActions>
       </Dialog>
+      */}
 
       <ViewportPortal>
         {renderWorklowBoxes && getWorklowComponents().map((component, idx) => {
