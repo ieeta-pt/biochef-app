@@ -482,6 +482,30 @@ export const typeDefinitions = [
     edgeColor: '#00897b',
     example: '((A:0.1,B:0.1)100:0.2,(C:0.1,D:0.1)100:0.2);\n((A:0.2,B:0.2)95:0.3,(C:0.2,D:0.2)95:0.3);\n((A:0.3,C:0.3)90:0.4,(B:0.3,D:0.3)90:0.4);',
   },
+  {
+    id: 'MAFFT_HAT2',
+    validator: 'mafftHat2',
+    defaultExtension: '.hat2',
+    uploadExtensions: ['.hat2'],
+    edgeColor: '#01579b',
+    example: '# BioChef MAFFT hat2 of 4 sequences, signature 106302acc21db7fd\n    1\n    4\n  2.082\n   1. =seq1_human\n   2. =seq2_cat\n   3. =seq3_mouse\n   4. =seq4_dog\n 0.265 0.833 0.815\n 0.727 0.727\n 0.319',
+  },
+  {
+    id: 'MAFFT_HAT3',
+    validator: 'mafftHat3',
+    defaultExtension: '.hat3',
+    uploadExtensions: ['.hat3'],
+    edgeColor: '#0277bd',
+    example: '# BioChef MAFFT hat3 of 4 sequences, signature 106302acc21db7fd\n0 1 100 4.53560 0 99 0 99 h\n0 2 100 3.05235 0 99 0 99 h\n0 3 100 3.09797 0 99 0 99 h\n1 2 100 3.32804 0 99 0 99 h\n1 3 100 3.32804 0 99 0 99 h\n2 3 100 4.39679 0 99 0 99 h',
+  },
+  {
+    id: 'MAFFT_DIST',
+    validator: 'mafftDist',
+    defaultExtension: '.dist',
+    uploadExtensions: ['.dist'],
+    edgeColor: '#0288d1',
+    example: '1-2 d=0.50 l=100,100\n1-3 d=0.85 l=100,100\n1-4 d=0.86 l=100,100\n2-3 d=0.84 l=100,100\n2-4 d=0.78 l=100,100\n3-4 d=0.50 l=100,100',
+  },
 ];
 
 export function getTypeDefinitions() {

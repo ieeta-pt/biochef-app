@@ -440,6 +440,52 @@ function validateBcf(content) {
   return validateBinWithMagic(content, BINARY_MAGIC.BCF) || validateBinWithMagic(content, BINARY_MAGIC.BGZF)
 }
 
+const MAFFT_NUMBER = '[+-]?(\\d+(\\.\\d*)?|\\.\\d+)([eE][+-]?\\d+)?';
+
+// The MAFFT operations pass their distances (hat2) and local alignments (hat3)
+// on with a first line naming the sequences they were computed from. Returns
+// the lines after it, or null without it.
+function mafftBody(content, kind) {
+  if (!content) return null;
+  const lines = content.replace(/\r\n?/g, '\n').replace(/^\n+|\n+$/g, '').split('\n');
+  const header = new RegExp(`^# BioChef MAFFT ${kind} of \\d+ sequences, signature [0-9a-f]{16}$`);
+  return header.test(lines[0]) ? lines.slice(1) : null;
+}
+
+// Distances: the number of sequences, their names, then the upper triangle of
+// the matrix, or only its rows for the sequences being added to an alignment.
+// Nothing after the first line when MAFFT wrote none.
+function validateMafftHat2(content) {
+  const body = mafftBody(content, 'hat2');
+  if (!body) return false;
+  if (body.length === 0) return true;
+  if (body.length < 3 || !/^\s*\d+$/.test(body[0]) || !/^\s*\d+$/.test(body[1])) return false;
+  const n = parseInt(body[1], 10);
+  if (n < 1 || body.length < 3 + n || !new RegExp(`^\\s*${MAFFT_NUMBER}$`).test(body[2])) return false;
+  for (let i = 0; i < n; i++) {
+    if (!new RegExp(`^\\s*${i + 1}\\. =.+$`).test(body[3 + i])) return false;
+  }
+  const values = body.slice(3 + n).join(' ').split(/\s+/).filter(Boolean);
+  const number = new RegExp(`^${MAFFT_NUMBER}$`);
+  return values.length <= n * (n - 1) / 2 && values.every(v => number.test(v));
+}
+
+// Local alignments, one per line: the two sequences, the overlap, the score,
+// the region in each sequence and a tag.
+function validateMafftHat3(content) {
+  const body = mafftBody(content, 'hat3');
+  if (!body) return false;
+  const line = new RegExp(`^\\d+ \\d+ -?\\d+ ${MAFFT_NUMBER} -?\\d+ -?\\d+ -?\\d+ -?\\d+ \\S+$`);
+  return body.every(l => !l.trim() || line.test(l.trim()));
+}
+
+// mafft-distance: one pair of sequences per line, "i-j d=distance l=length_i,length_j".
+function validateMafftDist(content) {
+  if (!content || !content.trim()) return false;
+  const line = new RegExp(`^\\d+-\\d+ d=${MAFFT_NUMBER} l=\\d+,\\d+$`);
+  return content.trim().split(/\r?\n/).every(l => line.test(l.trim()));
+}
+
 function validateNewick(content) {
   if (typeof content !== 'string') return false;
   if (content.startsWith('\uFEFF')) content = content.slice(1);
@@ -572,6 +618,9 @@ const validators = {
   csi: validateCsi,
   bcf: validateBcf,
   newick: validateNewick,
+  mafftHat2: validateMafftHat2,
+  mafftHat3: validateMafftHat3,
+  mafftDist: validateMafftDist,
   fai: validateFai,
   json: validateJson,
   text: () => true, // Default fallback for TEXT
