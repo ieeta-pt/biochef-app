@@ -1,0 +1,865 @@
+{
+  "nodes": [
+    {
+      "id": "in-reads",
+      "type": "inputWorkflowNode",
+      "position": {
+        "x": 259.21767420922936,
+        "y": 8.607220825813865
+      },
+      "data": {
+        "label": "Input",
+        "outputs": {
+          "out": {
+            "kind": "text",
+            "data": "@read_1\nTGTAATGAAATGTCACATCCGAATCGAAGGTCGCCCTAACAGTGACTTTC\n+\nCF@@EF@HII?AAHC@B@GEHHHBGEFFCHECHH?H@BIBCI@ABAG@A?\n@read_2\nCTTCGGGTGCCACTGGCACACCCAACACAGATTCATGTAATCTGCTCGTA\n+\nF@FDEDDI@ADEFCIEG?F@DCD@EG?IGFE?BGDHFIF?BCGACFF@?I\n@read_3\nGACGCCTACTTAACTTTCATGGTGATCTTAAAGCGGAGCCTTACCATGCG\n+\nIAF?AGHD@F@GF?AEIA@FCDHEI@DIGEDIFG?H@BIICB@E@I@FAC\n@read_4\nGGAGCGAATGGTTAACCGAGTCTCCACATGCGTTTGTTCCACACGACCAC\n+\nIBHCIIIAI@II?CF?HDA@CDEABAGDGGCACFCD@F@ABIIEGD@E?C\n@read_5\nTGCAGATTATGCGTATAAGCGGCAGACGCACATAAGCGGGAATCAATCCT\n+\nF@IBIIH??DBAHB@GBHBBDAH?CAAGCA@I?A?DBHD?AC?AEG@@FF\n@read_6\nGGGGCAGCCTGCCCCCACTGTGCGACCGGCCACTTAAGGCTTGAAAACTA\n+\nAG?HGGDI@EDIE?CHCD@HGBAIFB@DGD@CHBEGHHIIG?HIC?ACCD\n@read_7\nCCTTAAGTGGCCGGTCGCACAGTGGGGGCAGGCTCCCCCATCGCGCCGCG\n+\nE?F@DHEHEIEC@E?DAHFD@E@BEHEG@ECDBDA@GI@GGBDDIAB@AC\n@read_8\nAGGCGTCTACCGCCTATTCCTTATACCTCCCAGTCCAAGGAGAGTGTGTA\n+\nGGHADDCEEDIH?IID@D@GIECCIHAD@HIADCIIEAH@CGEIDAIIG@\n@read_9\nTGAATCTGTGTTGGGTGTGCCAGTGGCACCCGAAGGACGCACTGGTTCAC\n+\nDG@G@C@ACFGAE@BFD?E?EGDBE@DB?D@IDAA?CFAFFH?@?CBAGH\n@read_10\nTGCGTATAAGCGGCGGACGCACATAAGCGGGAATCAATCCTCGACGTTAA\n+\nCB?B?DCGEGFC?IBCD?IDC@DEEFEDAFFDGC@E@EHAGCD@@DICCF\n@read_11\nAAAGTGAACCAGTGCGTCCTTCGGGTGCCACTGGCACACCCAACACAGAT\n+\n@IDID@GGCCAIADGB@BABF?DGHDFGAH@@CEFGEEH@ADI@FFIGDA\n@read_12\nTAACCCATCTGTAATTTACACACTCTCCTTGGACTGGGAGGTATAAGGAA\n+\nADDDEADGG@DBF@CFBA@?CEHEBADHDBAFGFFCF?@EGFBBHD??CF\n@read_13\nATTAAACACGACTTGAAGAGTGTGTCTCGTCTGTGCGTGTTCCCGAAAGT\n+\nI?HFCIHHB?HFAGIHEAIB?H@B?FDEAEBEGHF?AGBGDIFGEDAFGD\n@read_14\nGGCGCGATGGGGCAGCCTGCCCCCACTGTGCGACCGGCCACTTAAGGCTT\n+\nAEIFFIBCDCI?@IHBG?AEA?EFAC??CHH@DCFIGGFAGFCB@DAFIC\n@read_15\nCCTATTCCTTATACGTCCCAGTCCAAGGAGAGTGTGTAAATTACAGATGG\n+\nFGD@H@?GGBHGAADGF@IBHF@GF?FAGEFH?GFIC?EC?BH@?ED@G?\n@read_16\nATTCGCTCCAGCGTCATGAAAGTCACTGTTAGGGCGACCTTCGATTCGGA\n+\n?AGCBHDHHIDBCAIGBECC?GHAIIEGF?DIIEGDEEACEAGFBBCAF?\n@read_17\nAGCAGATTACATGAATCTGTGTTGGGTGTGCCAGTGGCACCCGAAGGACG\n+\nCGHHECABDBEHBFGIIDCFIFFADAAGFAGI?G?@I??EAIB@A?BGFD\n@read_18\nGGGTGAACCATTCGCTCCAGCGTCATGAAAGTCACTGTTAGGGCGACCTT\n+\nC?@ICGHI?AD?BHAE@CAHBHEIGDEA@GD?@EB@DHHHED?ICFFBDG\n@read_19\nATGTAATCTGCTCCTAGTTTTCAAGCCTTAAGTGGCCGGTCGCACAGTGG\n+\nAC?EDHEDFDEIHACDHBFDAEDCIFHBDECED@HBHGAIG?FBFC@EIF\n@read_20\nCTCAGGACTGCGAACGAAAGATTAAGAATGCTTAACCCGGTACCTAACCC\n+\nBGFDF@FFD@C?@?DI@IABGAGADGEFBEIAAIIEE?HBFHEE?BBC@H\n@read_21\nCGACCTTCGATTCGGATGTGACATTTCATTACATTACGCTCAGGACTGCG\n+\nH?BC?CBGCAFHFGG@H@CGDG?FGBE@IBC?FCD@F@BBHDHIEAHABB\n@read_22\nTGGGTTAACCATTCGCTCCAGCGTCATGAAAGTCACTGTTAGGGCGACCT\n+\nCDGHAHFDI??@IF?@AFF?EBAICAC@IDC@DIIA?EICBEI@@?BF@A\n@read_23\nACGAATAGGCGGTAGACGCTTACTTAACTTTCATGGTGATCGTAAAGCGG\n+\nBFE@BFIH@G?DDAEHEDGIAF@?H@?CB??EGCIGEEE@IGGHAC@C@G\n@read_24\nCTCTCCTTGGACTGGGAGGTATAAGGAATAGGCGGTAGACGCCTACTTAC\n+\nB?FDEAA?GIEBDBEDC@HD@GI?ABG?E@FCCD@GF?DBCHCHBFDHFB\n@read_25\nAATTGGTGCATGGTAAGGCTCCGCTTTACGATCACCATGAAAGTTAAGTA\n+\nFCFC@@AICH?BDA@BDEG?ICCA?EFGGB@F@A@??BABEDIII@HHC@\n@read_26\nCATCAATGTGGTCGTGTGGAACAAACGCATGTGGAGACTGGGTTAACCAT\n+\nDHBA@BIBCG?BHEDAABHDDH?DHHAHBFGCAF?@?BHB?GF?DHBADA\n@read_27\nCAGGCTGCCCCATCGCGCCGCGTGATATCTTGCGAAGTTTAGGATAATAG\n+\nDF?CBB@DC@??EFEAEFEDGE@FHIIBAF@?C?DC@@DAEA@G@DHHF?\n@read_28\nTGTTGGGTGTGCCAGTGGCACCCGAAGGACGCACTGGTTCACTTTCGGGA\n+\nEGEGIFHBFC@E?GHGHIHA@FAABBA?E@IEBIAHCD@@EGEGDCGF?H\n@read_29\nTAGGATTAACGTCGAGGATTGATTCCCGCTTATGTGCGTCTGCCGCTTAT\n+\nA@CGEAGH?ABB?B?F?DBCDFGEI@I?BDFHFAFHGDDAC@C?E?AHBB\n@read_30\nAAGGACTACGCGGTAGACGCCTTCTTAACTTTCATGGTGATCGTAAAGCG\n+\nEE?HHBDBIGIFIDGCAIGAC@FACGAIDI@BDBCEDDCHCF@F?IHHH@\n@read_31\nTTTCGGGAACACGCACAGAGGAGACACACTCGTCAAGTCGTGTTTAAAGG\n+\nGHGDEIADFDBAE?BBAB?HGA@DI?EICGH?H?I@I??@EFE@GCFABI\n@read_32\nTCTCCACATGCGTTTGTTCCACATGACCACATTGATGCATACTCCTTATT\n+\nDFHC@DDA@EEFCEFEIA@A?A@EHFHIFAHEDH?IAFF@EF?@CID?IG\n@read_33\nTAAGGAATAGGCGGTAGACGCCTACTTAACTTTCATGGTAATCGTAAAGC\n+\nFDGHHFIDF@@IB?DDICGGD@?AFAE@CHBB@EBFBD@E?IIH@FFIHG\n@read_34\nGTACGCTCAGGACTGCGAACGAAAGATTAAGAATGCTTAACCCGGTACCT\n+\nGCE?G@?EA?I?BCACICA?CBG?DF@HIGBIGEBGCI?EEEIDG??CBH\n@read_35\nCAGTGGCACCCGAAGGACGCACTGGTTCACTTTCGGGAACACGCACAGAC\n+\nI?@IDFBIHHB?IDE@ECGC?GDGGFF?CIBDG@@AGG?I@BIIBIE@BG\n@read_36\nGGGTGTGCCAGTGGCACCCGAAGGACGCACTGGTTCACTTTCGGGAACAC\n+\n?HHEGG@CBDBEIGAAABHCB@AIH?GFIG@CI@C@BHFDDAIIB@CH@B\n@read_37\nGCCCCATCGCGCCGCGTGATATCATGCGAAGTTTAGGATAATAGAAAAGC\n+\nDG?IBHIAGAFAAHHIAFD?BFB@CDB?IBGDEFF??ID@GICCHGHAEI\n@read_38\nTTCATGTAATCTGCTCGTAGTTTTCAAGCCTTAAGTGGCCGGTCGCACAG\n+\nABEHAHAHIGCAIDFHH@BEEA@?BGGIEAH@AFHH?GG@@FIAHG?IIE\n@read_39\nTAAGCGGCAGACGCACATATGCGTGAATCAATCCTCGACGTTAATCCTAC\n+\nA@BGEDGHI?AEI?@AFHE@@CBD@H?EEHIGCH?AIFF?BIGCB?HGGB\n@read_40\nTTAACCCGGTACCTAACCCATCAGTAATTTACACACTCTCCTTGGACTGG\n+\nDGG?CBC@EID@GAFDDBHCAIBFBBBCBBBBHDA@@@IIFH?G?FDHDF\n@read_41\nAAAAGCTAAAAATCGAATTTAAAAGTTCACAATTGCCGCATGGTAAGGCT\n+\nIGGDFCCGH?E@A?BCFI@FDCDDGGCD?E@DIHBHHIIGACDDIGFF@E\n@read_42\nTTAGGATAATAGAAAAGCTAAAAATCGAATTTAAAAGTTCACAATTGCCG\n+\nDFFGCGFAGAHHFIIHEGIIGCDFGB@FCDECAC??GADCFG?FFC?ECH\n@read_43\nTAGGCGGTAGACGCCTACTTAACTTTCATGGTGATAGTAAAGCGGAGCCT\n+\nFABCE?@BEFB?BF@GIBFEICDAI?GG@CFICBD?IB@BIED?ACH@EB\n@read_44\nAAGAAGGAGTATGCATCAATGTGGTCGTGTGGAACAAACGCATGTGGAGA\n+\nDHBD@IGEBGIFGAHCDEID@@GI@?AA?B@FB@?HIEIFGHHC?DBH@?\n@read_45\nCTTGGACTGGGAGGTATAAGGAATAGGCGGTAGACGCCTACTTAACTTTC\n+\nEGCDFFE??CH?GAC?CBBD?CGGGHHA@?FDAACDHBBCC@HEHB@DFA\n@read_46\nAGACGAGACACACTCTTCAAGTCGTGTTTAAAGGAGTAGGATTAACGTCG\n+\nHGBB@CEDIH@@IEEDDBDDHI?CADHFHAF?BBIDA@@?BHAC?D@CFF\n@read_47\nAATGGTTAACCCAGTCTCCACATGCGTTTGTTCCACACGACCACATTGAT\n+\nC?ICE?GCBADEIA@EGIHIIBEBHAECHDFGABIAHGIBACGAEAIHAD\n@read_48\nCATTCGCTCCAGCGTCATGAAAGTCACTGTTAGGGCGACCTTCGATTCGG\n+\nBEE?HEDEHHHGGI?G@FF?BGGE?GEGI?BCFECCFAECH?GAFIF@G@\n@read_49\nCCTAACCCATCTGTAATTTACACACTCTCCTTGGACTGGGAGGTATAGGG\n+\nFFEF@HH?BGCHIGB?AA?ID?A?IHHCD@?@EAAICHIHHGAFHD?@CD\n@read_50\nCCTGCCCCCACTGTGCGACCGGCCACTTAAGGCTTGAAAACTACGAGCAG\n+\nCGGD?@IDDEHH?ABDDIFF?IAFAIFGDFE?GCHIDGG?BHIDD@AC?D\n@read_51\nCCACTGTGCGACCGGCCACTTAAGGCTTGAAAACTACGAACAGATTACAT\n+\nBDBBCCGDFI@CAAC@?HGG@BGDGDCACHBA@CHDGF?A?FI?@E?@EE\n@read_52\nACCTAACCCATCTGTAATTTACACACTCTCCTTGGACTGGGAGGTATAAG\n+\nAFE@DBHEEHDGBAII@HF@HHFDG@FACE@H@IHEDFII?@BAHI?AIA\n@read_53\nCGAAGGACGCACTTGTTCACTTTCGGGAACACGCACAGACGAGACACACT\n+\nEFHEHAFGEGFEDBAEH?HFBGCEGHD??HFD@HF@AGCFG@GH@BFIII\n@read_54\nAGCGTCATGAAAGTCACTGTTAGGGCGACCTTCGATTCGGATGTGACATT\n+\nFEEBIFIABHD?IC@?AFEFCFGBEIEFCAGE?CFEIDGI?@GIDEHICD\n@read_55\nCTAAAAATCGAATTTAAAAGTTCACAATTGCCGCATGGTAAGGCTCCGCT\n+\n?EED?CCAF@FBHEAIF@AGEBHI@FC@?@@HCF?FAII??IECADEH?G\n@read_56\nCCTCGACGTTAATCCTACTCCTTTAAACACGACTTGAAGAGTGTGTCTCG\n+\nBIIGFIGAHB@?AFI?FH?BIA?AI?C@FHAH@@@FHHB@BEDIED@IHG\n@read_57\nGTTAGGTACCGGGTTAAGCCTTCTTAATCTTTCGTTCGCAGTCCTGAGCG\n+\nBC?B@AIFFAAI??IDCBECDHF?@?GAA?FG@@BFHHDEBIDB@DB@BE\n@read_58\nGTAGGCGTCTACCGCCTATTCCTTATACCTCCCAGTCCAAGGAGAATGTG\n+\nGEF@FFB@G?EBADCBI@?FICAFHH?FFAEADIFI?I@EDG?CECHGHB\n@read_59\nGTCATGAAAGTCACTGTTAGGGCGACCTTCGATTCGGATGTGACATTTCA\n+\nAC@AFABGI?CEIGAFDEFI?CB@?BGIDEHDIIDFHIGGFFCHACACBF\n@read_60\nGCCCCCACTGTGCGACCGGCCACTTAAGGCTTGTAAACTACGAGCAGATT\n+\nIG@C?EHBFD@D?HIBHGBCB?@GFII@GEBFDHHG?IDEAEDED?CDDC\n@read_61\nTGGCACCCGAAGGACGCACTGGTTCACTTTCGGGAACAGGCACAGACGAG\n+\nF@HDHFHECIIF@DGH?CAH?ADFADA?CDEID?CCGI@GBIA@HAGDDI\n@read_62\nGATATCATGCGAAGTTTAGGATAATAGAAAAGCTAAAAATCGAATTTAAA\n+\nB@?IGH?F@C?@CI?@@HBHBAID?@ACHDDAGHBGH@@H?GBBCAG?@B\n@read_63\nCAAGTCGTGTTTAAAGGAGTAGGATTAACGTCGAGGATTGATTCCCGCTT\n+\nE@BEFCHHCIEDFIHEFGCAF@@CFFBIA?@?@FI?AEHIDACHH@@IGF\n@read_64\nAACACGACTTGAAGAGTGTGTCTCGTCTGTGCGTGTTCCCGAAAGTGAAC\n+\nIBBBICH@@C@DA?GD?FIEHGEC?FH?DEHEDH@F@IBDFGIDAHCDEB\n@read_65\nACACTCTTCAAGTCGTGTTTAAAGGAGTAGGATTAACGTCGAGGATTGAT\n+\nEED@IBECCIACIHBEB@AB?BCFFGEEI?BACA?CCIGAI?F??@DHC@\n@read_66\nACTACGAGCAGATTACATGAATCTGTGTTGGGTGTGCCAGTGGCACCCGA\n+\nCGECIDI@GBFE?ECC@BCBAFIDIE?C@FFEDE@ACG@DEHGDF??IIA\n@read_67\nAGTGGCACCCGAAGGACGCACTGGTTCACTTTCGGGAACACGCACAGACG\n+\nBCCFEAEBHBCIBEAEA?CCBHFBDHIIF@?FADEIBEEHC@@G??DBFD\n@read_68\nGTGACTTTCATGACGCTGGAGCGAATGGTTAACCCAGTCTCCACATGCGT\n+\n@A@D@BCAAGCHIHBH?GHAE@BFI@D?CII@EDH@DA?@FIFFICHI?D\n@read_69\nAAACGCATGTGGAGACTGGGTTAACCATTCGCTCCAGCGTCATGAAAGTC\n+\nAFGIIG@CFE@FCAAICBGECH?G@?G@GEE@FIHCDCH@G?@IFAAE?@\n@read_70\nGATTACATGAATCTGAGTTGGGTGTGCCAGTGGCACCCGAAGGACGCACT\n+\nFFF?FHBBCHE?D?@IEEFHHGC?FEFGHHIFB?G?EHDG@CIEF@FHID\n@read_71\nCACCCGAAGGACGCACTGGTTCACTTTCGGGAACACGCACAGACGAGACA\n+\nGCAGHI@?FF@@HH@G?G@AI@BDACFGF@AIDDA@BFE?BFDCGA@CDE\n@read_72\nTGGGGCAGCCTGCCCCCACTGTGCGACCGGCCACTTAAGGCTTGAAAACT\n+\nIEBC@?GDEAGGCB@GGCGDIA??GHCBCEG@?DCIGD@?I@FCH?FDBH\n@read_73\nTCGAGGATTGATTCCCGCTTATGTGCGTCTGCCGCTTATACGCATAATCT\n+\nC?GA@DCDCCF?AAHE?CCBAF?@GD@?EFHCHFDEFHAAGIFFIFAD@H\n@read_74\nCCTTCGGGTGCCACTGGCACACCCAACACAGATTCATGTAATCTGCTCGT\n+\nIA?HDA??CE@DAEDCE@?BBHHBFGGE@C?DFGE@F?EIB?CGHI@BGI\n@read_75\nGTTAAGCATTCTCAATCTTTCGTTCGCAGTCCTGAGCGTAATGTAATGAA\n+\nAI?HF??IAEGFEG@II@G?IFI@DEHDEA?@FDBF?B?CIDB@HICBBF\n@read_76\nGTATTTTTCAAGCCTTAAGTGGCCGGTCGCACAGTGGGGGCAGGCTACCC\n+\nBE@BBADC@II@?FE?HIDCB@FBD?DGB@HHF@IFH@@??ED@A?F?CH\n@read_77\nTTCCCGAAAGTGAACCAGTGCGTCCTTCGGGTGCCACTGGCACACTCAAC\n+\nG?EDBBIB@DBIFFHDHHDHCEDA@F?FB?IBBFHBBFDEBEA?D?@D?G\n@read_78\nTTAATCTTTCGTTCGCAGTCCTGAGCGTAATGTAATGAAATGTCACATCC\n+\nGHFB@FIH@AGEIGDFGFADDGFFFCHEIHI?BBBFBEBCEEHADCG@A@\n@read_79\nATGCGAAGTTTAGGATAATAGAAAAGCTAAAAATCGGATTTAAAAGTTCA\n+\nBFBGHGFFD@DBEEBFFG?DAHAC?FIDDBEEIEGCDH?H?AADHIHHHE\n@read_80\nAGATTCATGTAATCTGCTCGTAGTTTTCAAGCCTTAAGTGGCCAGTCGCA\n+\nFFFH?@CIFDCEHAEBAHEFEIAH@E?BACIGCI@BFEG@D@@GDEFACB\n@read_81\nATAAGCGGGAATCAATCCTCGACGTTAATCCTACTCCTTTAAACACGACT\n+\nB@?E??DBII@B@IAA?EG@DDGIBHBGEE@BB@DDA?EID?EBFB@ICI\n@read_82\nCTGCTCGTAGTTTTCAAGCCTTAAGTGGCCGGTCGCACAGTGGGGGCAGG\n+\n?GEIC?BDDBBG?IBIBHEGDAFI?@F@B?IABA@AHGBBG@EFCABBEA\n@read_83\nCACAATTGCCGCATGGTAAGGCTCCGCTTTACTATCACCATGAAAGTTAA\n+\nDGFID?IEEBBF?DII?IIACHFIACBHHIA?@@IEEH@GBEAECCGGIE\n@read_84\nTCGATTTTTAGATATTCTATTATCCTAAACTTCGCATGATATCACCCTGC\n+\nBG?EHGCFFDHEDDIDDBDIEEH?DD@?FEA?H@GCBDFHIIFGEIB?ID\n@read_85\nGTATGCATCAATGTGGTCGTGTGGAACAAACGCATGTGGAGACTGGGTTA\n+\nIF@DBHH@IDEEIIGEBBC@C@@@DHB@HDADEH?C?HGBEEDDIAGIHH\n@read_86\nCTTACGATCACCATGAAAGTTAAGTAGGCGTCTACCGCCTATTCCTTATA\n+\n@ADH?CFIAHAFFCABBBI?DH@IAEEIA?@DFA?@GIDHEAIEB?@BEF\n@read_87\nTTAAATTCGATTTTTAGCTTTTCTATTATCCTAAACTTCGCATGATATCA\n+\nGFD@?AHBIA@GC?@@GCDGAEI?BC?GCIGFAHFDGDHGGB@I?B?BAC\n@read_88\nTGGGAGGTATAAGGAATAGGCGGTAGACGCCTACTTAACTTCCATGGTGA\n+\nF@GDHCGCH@?ADEADIGGHEFHAC?IGAIAAEHC?IDBIHEFAFDFGCC\n@read_89\nCTGTGTTGGGTGTGCCAGTGGCACCCGAAGCACGCACTGGTTCACTTTCG\n+\nEFEAD@DIBG@CCFCCB?IHEBCIG?FHF?D?HFDCD@?DAED?@EFB@G\n@read_90\nTTTAAGGAGTAGGATGAACGTCGAGGATTGATTCCCGCTTATGTGCGTCT\n+\nCCF@EBHAGABC@CBIEBF@GHABHIIAB@AE?CBAE?HB@?EEGCIBBD\n@read_91\nAAAGTGAACCAGTGCGTCCTTCGGGTGCCACTGGCACACCCAACACAGAT\n+\n?ABEGCGDDFI@E@FEGG?AHCAC?H?BEFIGG@AFGEGEEHCBA?AHBH\n@read_92\nAAGAAGGAGTATGCATCAATGCGGTCGTGTGGAACAAACGCATGTGGAGA\n+\nFBDCBHIEAFBEDAF@FAFAABHFAIC?CAAEIHB@A@EBFIE@GA?H@E\n@read_93\nCACAGATTCATGTAATCTGCTCGTAGTTTTCAAGCCTTAAGTGGCCGGTC\n+\n@?HAAEGDHAIEAIICHCD@CFIDC@?AIADAEFF@@HECA@DAAEDDFE\n@read_94\nCACGCACAGACGAGACACAATCTTCAAGTCGTGTTTAAAGGAGTAGGATT\n+\nA@B@?HEAAFAGCFEDFI?C@A?I?HAGA?EEIFGCHGCBEAC@GEABEH\n@read_95\nTCGCCCTAACAGTGACTTTCATGACGCTGGAGCGAGTGGTTAACCCAGTC\n+\nEFH?CAAIF@I@BBIIAAGGHIGDFADCDHE?IEBBHH@AHIF@?ACG@F\n@read_96\nTGAGCGTAATGTAATGAAATGTCACATCCGAATCGAAGGTCGCCCTAACA\n+\n@EEBED@DDHFBF@CF?GAFAIBDH?HE?DEFB?B?IECCIA@A@CE@CF\n@read_97\nTACATGAATCTGTGTTGTGTGTGCCAGTGGCACCCGAAGGACGCACTGGT\n+\nBIH?DD?CCG@FIFEEDDGEGD@AFEDAGHAGEECIIEICH@@@@I?HE@\n@read_98\nACACTCTTCAAGTCGTGTTTAAAGGAGTACGATTAACGTCGAGGATTGAT\n+\nEDGAEB@AG@IHEICGADB@@?E?IHA?HG@HE?AFIIDABIBCBGBECI\n@read_99\nCTAACAGTGACTTTCATGACGCTGGAGCGAATGGTTAACCCAGTCTCCAC\n+\nACCFB@DGICFFEGEBCABICE@HHCABFEFEHCDH@HEEBHDDI@FA?G\n@read_100\nTTTCATGGTGATCGTAAAGCGGAGCCTTACCATGCGGCAATTGTGAACTT\n+\nFCAE?GG?DI?@F@ECCDDE@GDFH?ECFFI@DH@?B??A@DEBA@BDG?\n@read_101\nCCTAACAGTGACTTTCATGACGCTGGAGCGAATGGTTAACCCAGTCTCCA\n+\nG@ABDEFHGBEB@CEAICHI@AF@@B?FAC?FIGFDC@G@DEBAEGEGD?\n@read_102\nCTGTGCGTGTTCCCGAAAGTGAACCAGTGCGTCCTTCGGGTGCCACTGGC\n+\n@AI?HDFH?FBF@??HICBGGAA@@CDFFDGCIFCDF?DCDGIHF@CIGI\n@read_103\nTGGTTAACCCAGTCTCCACATGCGTTTGTTCCACACTACCACATTGATGC\n+\nFC?EDI??CADCGIGA@CABEH@CB?FDBIIEEE@CCHCAHEIDHAIBCA\n@read_104\nGATTACATGAATCTGTGTTGGGTGTGCCAGTGGTACCCGAAGGACGCACT\n+\nAGFABIIACIC?FHB@@?AH@G@BB@F?GFE?@CEFABGCHIFIH@EAI?\n@read_105\nCTATTCCTTATACCTCCCAGTCCAAGGAGCGTGTGTAAATTACAGATGGG\n+\nFHIAHGIGCADHHDHHE@??AB@I@FIFDBB@AEE@?HC@?@FDHI?AD@\n@read_106\nGTGTCTCGTCTGTGCGTGTTCCCGAAAGTGAACCAGTGCGTCCTTCGGGT\n+\nAC@GHBGHGCEH?G@HFCI??DECBD?ABGDI?BF@HH?D@EHH@GFAC?\n@read_107\nTTCGCAGTCCTGAGCGTAATGTAATGAAATGTCACATCCGAATCGAAGGT\n+\n@@CGBFDBFCDGCIBGCDGG@?DEHFC@BAGBCGB@DA?BFIF@?F?CCH\n@read_108\nCACAGATTCATGTAATCTGCTCGTAGTTTTCAAGCCTTAAGTGGCCGGTC\n+\nCDHE?HCDCICIH?@CHIDCAFF?F?F?DFIGBE?H@CHGD@FACCCFAB\n@read_109\nACCTCCCAGTCCAAGGAGAGTGTGTAAATTACAGATGGGTTAGGTACCGG\n+\nBEH?IAEI@@BHGHIGEG@G?HFIGGFDCBHCBDBDBFD@BFED@DGG@D\n@read_110\nGCACAGACGAGACACACTCTTCAAGTCGTGTTTAAAGGAGTAGGATTAAC\n+\nEIFECFAAHG@A?HHDIIFEDFAGHC@BCFD?HGGHGECDEDAA?BEGCH\n@read_111\nCATCGCGCCGCGTGATATCAAGCGAAGTTTAGGATAATAGAAAAGCTAAA\n+\n?E@GDBGII?II?BAHEBIBCFAFAFCABI@GB?E@FGHBA?ECHEIHBI\n@read_112\nTTAAGTGGCCGGTCGCACAGTGGGGGCAGGCTGCCCCATCGCGCCGCGTG\n+\nBI@HHDAHG??E@DDG@I?GBDGBAGEBCADDEBGB???G@GEF?ACC?B\n@read_113\nACAATTGCCGCATGGTAAGGCTCCGCTTTACGATCACCATGAAAGTTAAG\n+\nAI@@GABFHB@AEHFGHB?FCECDA?DHHE?CBGFGFDIBDFFGG@@E@E\n@read_114\nCATTACATTACGCTCAGGACTGCGAACGAAAGATTAACAATTCTTAACCC\n+\nGBDI?BCCEHCDHECGGIIB@HA@BCACH@AGHIEDHHHCHIFBA?BB@H\n@read_115\nTAACAGATGGGTTAGGTACCGGGTTAAGCATTCTTAATCTTTCGTTGGCA\n+\nG?HC?ICIFE?CCI?H?FHIFFAFIG@?D?HAAA@E@?FI?D@GCBIH?D\n@read_116\nAGCTTTTCTATTATCCTAAACTTCGCATGATATCACGCGGCGCGATGGGG\n+\nCAHDEBBCBACCFC@FDHDDIGFIIA?HEAGHBEDIICBDGGC@GBCBFC\n@read_117\nGTCGTGTGGAACAAACGCATGTGGAGACTGGGTTAACCATTCGCTCCAGC\n+\nAAID?@CADFEAF?IABACC@ABBE@BAIGD?FAD@FGIEBFIEFB@EAD\n@read_118\nGGTACCGGGTTAAGCTTTCTTAATCTTTCGTTCGCAGTCCTGAGCGTAAT\n+\nCECI@HFGDFDGD@AEGEI@A?DHCBGHFE?FC?@FFD?HIDCEDIC?GC\n@read_119\nCTTATACCTCCCAGTCCAAGGAGAGTGTGTAAATTACAGATGGGTTAGGT\n+\nHFBECACGI?HEAICC?EB?EIACCFHID@BB?DB@HCHFHEIHDGEFG?\n@read_120\nGGCCGGTCGCACAGTGGGGGCAGGCTGCCCCATCGCGCCGCGTGATATCA\n+\n@IIIIDGGGEBEFFCFAAEC?GDFIAI@EHIEEEBI?HBAHHG@HHE?DH\n"
+          }
+        },
+        "output": {},
+        "toolMessages": {},
+        "runCalled": false,
+        "isRunning": false
+      }
+    },
+    {
+      "id": "in-ref",
+      "type": "inputWorkflowNode",
+      "position": {
+        "x": 88.59110129684728,
+        "y": 120.94314068968065
+      },
+      "data": {
+        "label": "Input",
+        "outputs": {
+          "out": {
+            "kind": "text",
+            "data": ">contig_1 length=600\nGACAGGTACAAGAAGGAGTATGCATCAATGTGGTCGTGTGGAACAAACGCATGTGGAGAC\nTGGGTTAACCATTCGCTCCAGCGTCATGAAAGTCACTGTTAGGGCGACCTTCGATTCGGA\nTGTGACATTTCATTACATTACGCTCAGGACTGCGAACGAAAGATTAAGAATGCTTAACCC\nGGTACCTAACCCATCTGTAATTTACACACTCTCCTTGGACTGGGAGGTATAAGGAATAGG\nCGGTAGACGCCTACTTAACTTTCATGGTGATCGTAAAGCGGAGCCTTACCATGCGGCAAT\nTGTGAACTTTTAAATTCGATTTTTAGCTTTTCTATTATCCTAAACTTCGCATGATATCAC\nGCGGCGCGATGGGGCAGCCTGCCCCCACTGTGCGACCGGCCACTTAAGGCTTGAAAACTA\nCGAGCAGATTACATGAATCTGTGTTGGGTGTGCCAGTGGCACCCGAAGGACGCACTGGTT\nCACTTTCGGGAACACGCACAGACGAGACACACTCTTCAAGTCGTGTTTAAAGGAGTAGGA\nTTAACGTCGAGGATTGATTCCCGCTTATGTGCGTCTGCCGCTTATACGCATAATCTGCAT\n"
+          }
+        },
+        "output": {},
+        "toolMessages": {},
+        "runCalled": false,
+        "isRunning": false
+      }
+    },
+    {
+      "id": "fastp",
+      "type": "workflowNode",
+      "position": {
+        "x": 320,
+        "y": 100
+      },
+      "data": {
+        "label": "Single-End QC (FASTP)",
+        "outputs": {},
+        "output": {},
+        "paramValues": {
+          "qualified_quality_phred": {
+            "enabled": false,
+            "value": 15
+          },
+          "length_required": {
+            "enabled": false,
+            "value": 15
+          },
+          "n_base_limit": {
+            "enabled": false,
+            "value": 5
+          },
+          "unqualified_percent_limit": {
+            "enabled": false,
+            "value": 40
+          },
+          "trim_front1": {
+            "enabled": false,
+            "value": 0
+          },
+          "trim_tail1": {
+            "enabled": false,
+            "value": 0
+          },
+          "disable_adapter_trimming": {
+            "enabled": false,
+            "value": ""
+          },
+          "adapter_sequence": {
+            "enabled": false,
+            "value": ""
+          },
+          "cut_front": {
+            "enabled": false,
+            "value": ""
+          },
+          "cut_tail": {
+            "enabled": false,
+            "value": ""
+          },
+          "cut_window_size": {
+            "enabled": false,
+            "value": 4
+          },
+          "cut_mean_quality": {
+            "enabled": false,
+            "value": 20
+          },
+          "thread": {
+            "enabled": false,
+            "value": 2
+          },
+          "json": {
+            "enabled": false,
+            "value": "fastp.json"
+          },
+          "html": {
+            "enabled": false,
+            "value": "fastp.html"
+          }
+        },
+        "toolMessages": {},
+        "isRunning": false,
+        "runCalled": false
+      }
+    },
+    {
+      "id": "mm2",
+      "type": "workflowNode",
+      "position": {
+        "x": 177.98763420544424,
+        "y": 240.80526172625716
+      },
+      "data": {
+        "label": "Align (minimap2)",
+        "outputs": {},
+        "output": {},
+        "paramValues": {
+          "preset": {
+            "enabled": true,
+            "value": "sr"
+          },
+          "sam_output": {
+            "enabled": true,
+            "value": ""
+          },
+          "kmer_size": {
+            "enabled": false,
+            "value": ""
+          },
+          "window_size": {
+            "enabled": false,
+            "value": ""
+          },
+          "hpc_minimizer": {
+            "enabled": false,
+            "value": ""
+          },
+          "split_index_size": {
+            "enabled": false,
+            "value": ""
+          },
+          "minibatch_size": {
+            "enabled": false,
+            "value": ""
+          },
+          "bandwidth": {
+            "enabled": false,
+            "value": ""
+          },
+          "top_frac_seeds": {
+            "enabled": false,
+            "value": ""
+          },
+          "stop_chain_gap": {
+            "enabled": false,
+            "value": ""
+          },
+          "max_intron_len": {
+            "enabled": false,
+            "value": ""
+          },
+          "max_secondary": {
+            "enabled": false,
+            "value": ""
+          },
+          "secondary_score_ratio": {
+            "enabled": false,
+            "value": ""
+          },
+          "min_chain_score": {
+            "enabled": false,
+            "value": ""
+          },
+          "min_minimizers": {
+            "enabled": false,
+            "value": ""
+          },
+          "min_dp_score": {
+            "enabled": false,
+            "value": ""
+          },
+          "match_score": {
+            "enabled": false,
+            "value": ""
+          },
+          "mismatch_penalty": {
+            "enabled": false,
+            "value": ""
+          },
+          "gap_open_penalty": {
+            "enabled": false,
+            "value": ""
+          },
+          "gap_ext_penalty": {
+            "enabled": false,
+            "value": ""
+          },
+          "zdrop": {
+            "enabled": false,
+            "value": ""
+          },
+          "mask_level": {
+            "enabled": false,
+            "value": ""
+          },
+          "read_group": {
+            "enabled": false,
+            "value": ""
+          },
+          "drop_quality": {
+            "enabled": false,
+            "value": ""
+          },
+          "long_cigar": {
+            "enabled": false,
+            "value": ""
+          },
+          "output_cigar": {
+            "enabled": false,
+            "value": ""
+          },
+          "skip_self_dual": {
+            "enabled": false,
+            "value": ""
+          },
+          "all_vs_all": {
+            "enabled": false,
+            "value": ""
+          },
+          "yaml_output": {
+            "enabled": false,
+            "value": ""
+          },
+          "pre_align_softmask": {
+            "enabled": false,
+            "value": ""
+          },
+          "filter_repetitive": {
+            "enabled": false,
+            "value": ""
+          },
+          "cs_tag": {
+            "enabled": false,
+            "value": ""
+          },
+          "md_tag": {
+            "enabled": false,
+            "value": ""
+          },
+          "eqx_cigar": {
+            "enabled": false,
+            "value": ""
+          },
+          "secondary_mode": {
+            "enabled": false,
+            "value": ""
+          },
+          "forward_only": {
+            "enabled": false,
+            "value": ""
+          },
+          "reverse_only": {
+            "enabled": false,
+            "value": ""
+          },
+          "no_self": {
+            "enabled": false,
+            "value": ""
+          },
+          "paf_no_hit": {
+            "enabled": false,
+            "value": ""
+          },
+          "sam_hit_only": {
+            "enabled": false,
+            "value": ""
+          },
+          "splice_mode": {
+            "enabled": false,
+            "value": ""
+          },
+          "sr_mode": {
+            "enabled": false,
+            "value": ""
+          },
+          "splice_flank": {
+            "enabled": false,
+            "value": ""
+          },
+          "cost_non_gt_ag": {
+            "enabled": false,
+            "value": ""
+          },
+          "heap_sort": {
+            "enabled": false,
+            "value": ""
+          },
+          "max_chain_skip": {
+            "enabled": false,
+            "value": ""
+          },
+          "max_chain_iter": {
+            "enabled": false,
+            "value": ""
+          },
+          "min_dp_len": {
+            "enabled": false,
+            "value": ""
+          },
+          "end_bonus": {
+            "enabled": false,
+            "value": ""
+          },
+          "end_seed_pen": {
+            "enabled": false,
+            "value": ""
+          },
+          "dual": {
+            "enabled": false,
+            "value": ""
+          },
+          "junc_bed": {
+            "enabled": false,
+            "value": ""
+          },
+          "junc_bonus": {
+            "enabled": false,
+            "value": ""
+          },
+          "alt_drop": {
+            "enabled": false,
+            "value": ""
+          },
+          "rmq": {
+            "enabled": false,
+            "value": ""
+          },
+          "split_prefix": {
+            "enabled": false,
+            "value": ""
+          },
+          "bucket_bits": {
+            "enabled": false,
+            "value": ""
+          },
+          "seed": {
+            "enabled": false,
+            "value": ""
+          },
+          "print_qname": {
+            "enabled": false,
+            "value": ""
+          },
+          "threads": {
+            "enabled": false,
+            "value": 1
+          }
+        },
+        "toolMessages": {},
+        "isRunning": false,
+        "runCalled": false
+      }
+    },
+    {
+      "id": "view",
+      "type": "workflowNode",
+      "position": {
+        "x": 270.0936368966218,
+        "y": 365.8712950422848
+      },
+      "data": {
+        "label": "View (samtools)",
+        "outputs": {},
+        "output": {},
+        "paramValues": {
+          "command": {
+            "enabled": true,
+            "value": "view"
+          },
+          "bam_output": {
+            "enabled": true,
+            "value": ""
+          },
+          "cram_output": {
+            "enabled": false,
+            "value": ""
+          },
+          "with_header": {
+            "enabled": false,
+            "value": ""
+          },
+          "header_only": {
+            "enabled": false,
+            "value": ""
+          },
+          "count_only": {
+            "enabled": false,
+            "value": ""
+          },
+          "require_flags": {
+            "enabled": false,
+            "value": ""
+          },
+          "exclude_flags": {
+            "enabled": false,
+            "value": ""
+          },
+          "min_mapq": {
+            "enabled": false,
+            "value": ""
+          },
+          "regions_bed": {
+            "enabled": false,
+            "value": ""
+          },
+          "read_group": {
+            "enabled": false,
+            "value": ""
+          },
+          "subsample": {
+            "enabled": false,
+            "value": ""
+          },
+          "min_qlen": {
+            "enabled": false,
+            "value": ""
+          },
+          "filter_expr": {
+            "enabled": false,
+            "value": ""
+          },
+          "no_pg": {
+            "enabled": false,
+            "value": ""
+          },
+          "threads": {
+            "enabled": false,
+            "value": 1
+          }
+        },
+        "toolMessages": {},
+        "isRunning": false,
+        "runCalled": false
+      }
+    },
+    {
+      "id": "sort",
+      "type": "workflowNode",
+      "position": {
+        "x": 426.0000000000001,
+        "y": 468
+      },
+      "data": {
+        "label": "Sort (samtools)",
+        "outputs": {},
+        "output": {},
+        "paramValues": {
+          "command": {
+            "enabled": true,
+            "value": "sort"
+          },
+          "output_format": {
+            "enabled": false,
+            "value": ""
+          },
+          "name_sort": {
+            "enabled": false,
+            "value": ""
+          },
+          "tag_sort": {
+            "enabled": false,
+            "value": ""
+          },
+          "max_mem": {
+            "enabled": false,
+            "value": ""
+          },
+          "minimiser_sort": {
+            "enabled": false,
+            "value": ""
+          },
+          "threads": {
+            "enabled": false,
+            "value": 1
+          }
+        },
+        "toolMessages": {},
+        "isRunning": false,
+        "runCalled": false
+      }
+    },
+    {
+      "id": "flagstat",
+      "type": "workflowNode",
+      "position": {
+        "x": 677.0755572538324,
+        "y": 593.7610788820396
+      },
+      "data": {
+        "label": "Flagstat (samtools)",
+        "outputs": {},
+        "output": {},
+        "paramValues": {
+          "command": {
+            "enabled": true,
+            "value": "flagstat"
+          },
+          "threads": {
+            "enabled": false,
+            "value": 1
+          }
+        },
+        "toolMessages": {},
+        "isRunning": false,
+        "runCalled": false
+      }
+    },
+    {
+      "id": "stats",
+      "type": "workflowNode",
+      "position": {
+        "x": 487.88012721801,
+        "y": 625.77965902824
+      },
+      "data": {
+        "label": "Stats (samtools)",
+        "outputs": {},
+        "output": {},
+        "paramValues": {
+          "command": {
+            "enabled": true,
+            "value": "stats"
+          },
+          "target_regions": {
+            "enabled": false,
+            "value": ""
+          },
+          "bwa_trim_quality": {
+            "enabled": false,
+            "value": ""
+          },
+          "insert_size": {
+            "enabled": false,
+            "value": ""
+          },
+          "read_length": {
+            "enabled": false,
+            "value": ""
+          },
+          "required_flag": {
+            "enabled": false,
+            "value": ""
+          },
+          "filtering_flag": {
+            "enabled": false,
+            "value": ""
+          },
+          "split_tag": {
+            "enabled": false,
+            "value": ""
+          },
+          "threads": {
+            "enabled": false,
+            "value": 1
+          }
+        },
+        "toolMessages": {},
+        "isRunning": false,
+        "runCalled": false
+      }
+    },
+    {
+      "id": "depth",
+      "type": "workflowNode",
+      "position": {
+        "x": 274.23809667194064,
+        "y": 617.4082035488157
+      },
+      "data": {
+        "label": "Depth (samtools)",
+        "outputs": {},
+        "output": {},
+        "paramValues": {
+          "command": {
+            "enabled": true,
+            "value": "depth"
+          },
+          "all_positions": {
+            "enabled": false,
+            "value": ""
+          },
+          "regions_bed": {
+            "enabled": false,
+            "value": ""
+          },
+          "region": {
+            "enabled": false,
+            "value": ""
+          },
+          "min_base_qual": {
+            "enabled": false,
+            "value": ""
+          },
+          "min_map_qual": {
+            "enabled": false,
+            "value": ""
+          },
+          "max_depth": {
+            "enabled": false,
+            "value": ""
+          },
+          "threads": {
+            "enabled": false,
+            "value": 1
+          }
+        },
+        "toolMessages": {},
+        "isRunning": false,
+        "runCalled": false
+      }
+    },
+    {
+      "id": "coverage",
+      "type": "workflowNode",
+      "position": {
+        "x": 70.16212719509835,
+        "y": 600.5335826745227
+      },
+      "data": {
+        "label": "Coverage (samtools)",
+        "outputs": {},
+        "output": {},
+        "paramValues": {
+          "command": {
+            "enabled": true,
+            "value": "coverage"
+          },
+          "region": {
+            "enabled": false,
+            "value": ""
+          },
+          "histogram": {
+            "enabled": false,
+            "value": ""
+          },
+          "n_bins": {
+            "enabled": false,
+            "value": ""
+          },
+          "min_map_qual": {
+            "enabled": false,
+            "value": ""
+          },
+          "min_base_qual": {
+            "enabled": false,
+            "value": ""
+          },
+          "max_depth": {
+            "enabled": false,
+            "value": ""
+          },
+          "no_header": {
+            "enabled": false,
+            "value": ""
+          }
+        },
+        "toolMessages": {},
+        "isRunning": false,
+        "runCalled": false
+      }
+    },
+    {
+      "id": "out-flagstat",
+      "type": "outputWorkflowNode",
+      "position": {
+        "x": 735.7982391744407,
+        "y": 754.2583257101811
+      },
+      "data": {
+        "label": "Output",
+        "output": {},
+        "outputs": {},
+        "toolMessages": {},
+        "runCalled": false,
+        "isRunning": false
+      }
+    },
+    {
+      "id": "out-stats",
+      "type": "outputWorkflowNode",
+      "position": {
+        "x": 506.2127735129933,
+        "y": 739.5094961846053
+      },
+      "data": {
+        "label": "Output",
+        "output": {},
+        "outputs": {},
+        "toolMessages": {},
+        "runCalled": false,
+        "isRunning": false
+      }
+    },
+    {
+      "id": "out-depth",
+      "type": "outputWorkflowNode",
+      "position": {
+        "x": 268.1241424566773,
+        "y": 750.2701628436348
+      },
+      "data": {
+        "label": "Output",
+        "output": {},
+        "outputs": {},
+        "toolMessages": {},
+        "runCalled": false,
+        "isRunning": false
+      }
+    },
+    {
+      "id": "out-coverage",
+      "type": "outputWorkflowNode",
+      "position": {
+        "x": 9.694352730649854,
+        "y": 748.2760814103616
+      },
+      "data": {
+        "label": "Output",
+        "output": {},
+        "outputs": {},
+        "toolMessages": {},
+        "runCalled": false,
+        "isRunning": false
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "type": "workflowEdge",
+      "source": "in-reads",
+      "sourceHandle": "out",
+      "target": "fastp",
+      "targetHandle": "in1"
+    },
+    {
+      "id": "e2",
+      "type": "workflowEdge",
+      "source": "fastp",
+      "sourceHandle": "out1",
+      "target": "mm2",
+      "targetHandle": "reads"
+    },
+    {
+      "id": "e3",
+      "type": "workflowEdge",
+      "source": "in-ref",
+      "sourceHandle": "out",
+      "target": "mm2",
+      "targetHandle": "ref"
+    },
+    {
+      "id": "e5",
+      "type": "workflowEdge",
+      "source": "view",
+      "sourceHandle": "out",
+      "target": "sort",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e6",
+      "type": "workflowEdge",
+      "source": "sort",
+      "sourceHandle": "out",
+      "target": "flagstat",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e7",
+      "type": "workflowEdge",
+      "source": "sort",
+      "sourceHandle": "out",
+      "target": "stats",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e8",
+      "type": "workflowEdge",
+      "source": "sort",
+      "sourceHandle": "out",
+      "target": "depth",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e9",
+      "type": "workflowEdge",
+      "source": "sort",
+      "sourceHandle": "out",
+      "target": "coverage",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e10",
+      "type": "workflowEdge",
+      "source": "flagstat",
+      "sourceHandle": "out",
+      "target": "out-flagstat",
+      "targetHandle": null
+    },
+    {
+      "id": "e11",
+      "type": "workflowEdge",
+      "source": "stats",
+      "sourceHandle": "out",
+      "target": "out-stats",
+      "targetHandle": null
+    },
+    {
+      "id": "e12",
+      "type": "workflowEdge",
+      "source": "depth",
+      "sourceHandle": "out",
+      "target": "out-depth",
+      "targetHandle": null
+    },
+    {
+      "id": "e13",
+      "type": "workflowEdge",
+      "source": "coverage",
+      "sourceHandle": "out",
+      "target": "out-coverage",
+      "targetHandle": null
+    },
+    {
+      "source": "mm2",
+      "sourceHandle": "out",
+      "target": "view",
+      "targetHandle": "in",
+      "type": "workflowEdge",
+      "id": "xy-edge__mm2out-viewin"
+    }
+  ],
+  "viewport": {
+    "x": 155.60914482906492,
+    "y": 149.38370776980764,
+    "zoom": 0.8032939967570334
+  }
+}

@@ -1,0 +1,308 @@
+{
+  "nodes": [
+    {
+      "id": "in",
+      "type": "inputWorkflowNode",
+      "position": {
+        "x": 50,
+        "y": 120
+      },
+      "data": {
+        "label": "Input",
+        "outputs": {
+          "out": {
+            "kind": "text",
+            "data": ">species_A_geneX\nATGCGTACGTAGCTGACTGATCGATCGTAGCTAGCGTAGCTGCATCGATCGGTAGCTAGCGTACGTAGCTAGCTGATCGTAGCTAGCTAGCTAGCTGAT\n>species_B_geneX\nATGCGTACGTAGCTGACTGATCGATCGTAGCTAGCGTAGCTGCATCGATCGGTAGCAAGCGTACGTAGCTAGCTGATCGTAGCTAGCTAGCTAGCTGAT\n>species_C_geneX\nATGCGTACGTAGCTGACTGAACGATCGTAGCTAGCGTAGCTGCATCGATCGGTAGCTAGCGTACGTAGCTAGCTGATCGTAGCTAGCTAGCTAGCTGGT\n>species_D_geneX\nATGCGTACGTAGCTGACTGATCGATCGAAGCTAGCGTAGCTGCATCGATCGGTAGCTAGCGTACGTAGCTAGCTGATCGTAGCTAGCTAGCTAGCTGAT\n>species_E_geneX\nATGCGTACGTAGCTGACTGATCGATCGTAGCTAGCGTAGCTGCATCGATCGGTAGCTAGCATACGTAGCTAGCTGATCGTAGCTAGCTAGCTAGCTGAT\n>species_F_geneX\nATGCGTACGTAGCTGACTGATCGAACGTAGCTAGCGTAGCTGCATCGATCGGTAGCTAGCGTACGTAGCTAGCTGATCGTAGCTAGCTAGCTAGCTAAT\n"
+          }
+        },
+        "output": {},
+        "toolMessages": {},
+        "runCalled": false,
+        "isRunning": false
+      }
+    },
+    {
+      "id": "muscle",
+      "type": "workflowNode",
+      "position": {
+        "x": 129,
+        "y": 226
+      },
+      "data": {
+        "label": "Align (muscle)",
+        "outputs": {},
+        "output": {},
+        "paramValues": {
+          "nucleotide": {
+            "enabled": true,
+            "value": ""
+          },
+          "amino": {
+            "enabled": false,
+            "value": ""
+          },
+          "perm": {
+            "enabled": false,
+            "value": ""
+          },
+          "perturb": {
+            "enabled": false,
+            "value": ""
+          },
+          "stratified": {
+            "enabled": false,
+            "value": ""
+          },
+          "diversified": {
+            "enabled": false,
+            "value": ""
+          },
+          "replicates": {
+            "enabled": false,
+            "value": ""
+          },
+          "max_gap_fraction": {
+            "enabled": false,
+            "value": ""
+          },
+          "min_confidence": {
+            "enabled": false,
+            "value": ""
+          },
+          "threads": {
+            "enabled": false,
+            "value": 1
+          }
+        },
+        "toolMessages": {},
+        "isRunning": false,
+        "runCalled": false
+      }
+    },
+    {
+      "id": "tree",
+      "type": "workflowNode",
+      "position": {
+        "x": 251.84108161074033,
+        "y": 358.681592214764
+      },
+      "data": {
+        "label": "Build Tree (FastTree)",
+        "outputs": {},
+        "output": {},
+        "paramValues": {
+          "nucleotide": {
+            "enabled": true,
+            "value": ""
+          },
+          "gtr": {
+            "enabled": true,
+            "value": ""
+          },
+          "lg": {
+            "enabled": false,
+            "value": ""
+          },
+          "wag": {
+            "enabled": false,
+            "value": ""
+          },
+          "cat": {
+            "enabled": false,
+            "value": ""
+          },
+          "nocat": {
+            "enabled": false,
+            "value": ""
+          },
+          "gamma": {
+            "enabled": false,
+            "value": ""
+          },
+          "noml": {
+            "enabled": false,
+            "value": ""
+          },
+          "mllen": {
+            "enabled": false,
+            "value": ""
+          },
+          "mlnni": {
+            "enabled": false,
+            "value": ""
+          },
+          "mlacc": {
+            "enabled": false,
+            "value": ""
+          },
+          "nni": {
+            "enabled": false,
+            "value": ""
+          },
+          "spr": {
+            "enabled": false,
+            "value": ""
+          },
+          "sprlength": {
+            "enabled": false,
+            "value": ""
+          },
+          "slownni": {
+            "enabled": false,
+            "value": ""
+          },
+          "slow": {
+            "enabled": false,
+            "value": ""
+          },
+          "fastest": {
+            "enabled": false,
+            "value": ""
+          },
+          "pseudo": {
+            "enabled": false,
+            "value": ""
+          },
+          "rawdist": {
+            "enabled": false,
+            "value": ""
+          },
+          "matrix": {
+            "enabled": false,
+            "value": ""
+          },
+          "nomatrix": {
+            "enabled": false,
+            "value": ""
+          },
+          "trans": {
+            "enabled": false,
+            "value": ""
+          },
+          "nj": {
+            "enabled": false,
+            "value": ""
+          },
+          "bionj": {
+            "enabled": false,
+            "value": ""
+          },
+          "boot": {
+            "enabled": false,
+            "value": ""
+          },
+          "nosupport": {
+            "enabled": false,
+            "value": ""
+          },
+          "nome": {
+            "enabled": false,
+            "value": ""
+          },
+          "intree": {
+            "enabled": false,
+            "value": ""
+          },
+          "intree1": {
+            "enabled": false,
+            "value": ""
+          },
+          "constraints": {
+            "enabled": false,
+            "value": ""
+          },
+          "constraintWeight": {
+            "enabled": false,
+            "value": ""
+          },
+          "seed": {
+            "enabled": false,
+            "value": ""
+          },
+          "top": {
+            "enabled": false,
+            "value": ""
+          },
+          "notop": {
+            "enabled": false,
+            "value": ""
+          },
+          "topm": {
+            "enabled": false,
+            "value": ""
+          },
+          "close": {
+            "enabled": false,
+            "value": ""
+          },
+          "refresh": {
+            "enabled": false,
+            "value": ""
+          },
+          "quiet": {
+            "enabled": false,
+            "value": ""
+          },
+          "nopr": {
+            "enabled": false,
+            "value": ""
+          },
+          "quote": {
+            "enabled": false,
+            "value": ""
+          }
+        },
+        "toolMessages": {},
+        "isRunning": false,
+        "runCalled": false
+      }
+    },
+    {
+      "id": "out",
+      "type": "outputWorkflowNode",
+      "position": {
+        "x": 367.8506885906072,
+        "y": 488.9962546308707
+      },
+      "data": {
+        "label": "Output",
+        "output": {},
+        "outputs": {},
+        "toolMessages": {},
+        "runCalled": false,
+        "isRunning": false
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "type": "workflowEdge",
+      "source": "in",
+      "sourceHandle": "out",
+      "target": "muscle",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e2",
+      "type": "workflowEdge",
+      "source": "muscle",
+      "sourceHandle": "out",
+      "target": "tree",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e3",
+      "type": "workflowEdge",
+      "source": "tree",
+      "sourceHandle": "out",
+      "target": "out",
+      "targetHandle": null
+    }
+  ],
+  "viewport": {
+    "x": 155.26197670924034,
+    "y": 7.8784358592899935,
+    "zoom": 1.371733288590597
+  }
+}

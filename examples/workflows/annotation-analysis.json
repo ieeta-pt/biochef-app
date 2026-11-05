@@ -1,0 +1,667 @@
+{
+  "nodes": [
+    {
+      "id": "in-genome",
+      "type": "inputWorkflowNode",
+      "position": {
+        "x": 181.42857142857144,
+        "y": 167.14285714285717
+      },
+      "data": {
+        "label": "Input",
+        "outputs": {
+          "out": {
+            "kind": "text",
+            "data": ">contig_1 length=600\nGACAGGTACAAGAAGGAGTATGCATCAATGTGGTCGTGTGGAACAAACGCATGTGGAGAC\nTGGGTTAACCATTCGCTCCAGCGTCATGAAAGTCACTGTTAGGGCGACCTTCGATTCGGA\nTGTGACATTTCATTACATTACGCTCAGGACTGCGAACGAAAGATTAAGAATGCTTAACCC\nGGTACCTAACCCATCTGTAATTTACACACTCTCCTTGGACTGGGAGGTATAAGGAATAGG\nCGGTAGACGCCTACTTAACTTTCATGGTGATCGTAAAGCGGAGCCTTACCATGCGGCAAT\nTGTGAACTTTTAAATTCGATTTTTAGCTTTTCTATTATCCTAAACTTCGCATGATATCAC\nGCGGCGCGATGGGGCAGCCTGCCCCCACTGTGCGACCGGCCACTTAAGGCTTGAAAACTA\nCGAGCAGATTACATGAATCTGTGTTGGGTGTGCCAGTGGCACCCGAAGGACGCACTGGTT\nCACTTTCGGGAACACGCACAGACGAGACACACTCTTCAAGTCGTGTTTAAAGGAGTAGGA\nTTAACGTCGAGGATTGATTCCCGCTTATGTGCGTCTGCCGCTTATACGCATAATCTGCAT\n"
+          }
+        },
+        "output": {},
+        "toolMessages": {},
+        "runCalled": false,
+        "isRunning": false
+      }
+    },
+    {
+      "id": "in-gff",
+      "type": "inputWorkflowNode",
+      "position": {
+        "x": -130,
+        "y": 174.28571428571425
+      },
+      "data": {
+        "label": "Input",
+        "outputs": {
+          "out": {
+            "kind": "text",
+            "data": "##gff-version 3\n##sequence-region contig_1 1 600\ncontig_1\ttest\tgene\t51\t200\t.\t+\t.\tID=gene1;Name=gene1\ncontig_1\ttest\tmRNA\t51\t200\t.\t+\t.\tID=mRNA1;Parent=gene1\ncontig_1\ttest\texon\t51\t200\t.\t+\t.\tID=exon1;Parent=mRNA1\ncontig_1\ttest\tCDS\t51\t200\t.\t+\t0\tID=cds1;Parent=mRNA1\ncontig_1\ttest\tgene\t351\t530\t.\t+\t.\tID=gene2;Name=gene2\ncontig_1\ttest\tmRNA\t351\t530\t.\t+\t.\tID=mRNA2;Parent=gene2\ncontig_1\ttest\texon\t351\t530\t.\t+\t.\tID=exon2;Parent=mRNA2\ncontig_1\ttest\tCDS\t351\t530\t.\t+\t0\tID=cds2;Parent=mRNA2\n"
+          }
+        },
+        "output": {},
+        "toolMessages": {},
+        "runCalled": false,
+        "isRunning": false
+      }
+    },
+    {
+      "id": "info-genome",
+      "type": "workflowNode",
+      "position": {
+        "x": 392.85714285714283,
+        "y": 337.14285714285717
+      },
+      "data": {
+        "label": "Fasta Info (GTO)",
+        "outputs": {},
+        "output": {},
+        "paramValues": {},
+        "toolMessages": {},
+        "isRunning": false,
+        "runCalled": false
+      }
+    },
+    {
+      "id": "exons",
+      "type": "workflowNode",
+      "position": {
+        "x": 165.99999999999994,
+        "y": 327.14285714285717
+      },
+      "data": {
+        "label": "Extract Spliced Exons (gffread)",
+        "outputs": {},
+        "output": {},
+        "paramValues": {
+          "w_add": {
+            "enabled": false,
+            "value": ""
+          },
+          "w_nocds": {
+            "enabled": false,
+            "value": ""
+          },
+          "write_exon_coords": {
+            "enabled": false,
+            "value": ""
+          },
+          "keep_attrs": {
+            "enabled": false,
+            "value": ""
+          },
+          "max_intron": {
+            "enabled": false,
+            "value": ""
+          },
+          "min_length": {
+            "enabled": false,
+            "value": ""
+          },
+          "range": {
+            "enabled": false,
+            "value": ""
+          },
+          "range_strict": {
+            "enabled": false,
+            "value": ""
+          },
+          "jmatch": {
+            "enabled": false,
+            "value": ""
+          },
+          "discard_single_exon": {
+            "enabled": false,
+            "value": ""
+          },
+          "coding_only": {
+            "enabled": false,
+            "value": ""
+          },
+          "noncoding_only": {
+            "enabled": false,
+            "value": ""
+          },
+          "discard_noncanonical": {
+            "enabled": false,
+            "value": ""
+          },
+          "discard_incomplete_cds": {
+            "enabled": false,
+            "value": ""
+          },
+          "no_pseudo": {
+            "enabled": false,
+            "value": ""
+          },
+          "ids_keep": {
+            "enabled": false,
+            "value": ""
+          },
+          "ids_drop": {
+            "enabled": false,
+            "value": ""
+          },
+          "in_bed": {
+            "enabled": false,
+            "value": ""
+          },
+          "in_tlf": {
+            "enabled": false,
+            "value": ""
+          }
+        },
+        "toolMessages": {},
+        "isRunning": false,
+        "runCalled": false
+      }
+    },
+    {
+      "id": "cds",
+      "type": "workflowNode",
+      "position": {
+        "x": -165.71428571428578,
+        "y": 344.2857142857143
+      },
+      "data": {
+        "label": "Extract Spliced CDS (gffread)",
+        "outputs": {},
+        "output": {},
+        "paramValues": {
+          "write_exon_coords": {
+            "enabled": false,
+            "value": ""
+          },
+          "keep_attrs": {
+            "enabled": false,
+            "value": ""
+          },
+          "max_intron": {
+            "enabled": false,
+            "value": ""
+          },
+          "min_length": {
+            "enabled": false,
+            "value": ""
+          },
+          "range": {
+            "enabled": false,
+            "value": ""
+          },
+          "range_strict": {
+            "enabled": false,
+            "value": ""
+          },
+          "jmatch": {
+            "enabled": false,
+            "value": ""
+          },
+          "discard_single_exon": {
+            "enabled": false,
+            "value": ""
+          },
+          "coding_only": {
+            "enabled": false,
+            "value": ""
+          },
+          "discard_noncanonical": {
+            "enabled": false,
+            "value": ""
+          },
+          "discard_incomplete_cds": {
+            "enabled": false,
+            "value": ""
+          },
+          "drop_inframe_stop": {
+            "enabled": false,
+            "value": ""
+          },
+          "adjust_phase": {
+            "enabled": false,
+            "value": ""
+          },
+          "check_opposite_strand": {
+            "enabled": false,
+            "value": ""
+          },
+          "no_pseudo": {
+            "enabled": false,
+            "value": ""
+          },
+          "ids_keep": {
+            "enabled": false,
+            "value": ""
+          },
+          "ids_drop": {
+            "enabled": false,
+            "value": ""
+          },
+          "in_bed": {
+            "enabled": false,
+            "value": ""
+          },
+          "in_tlf": {
+            "enabled": false,
+            "value": ""
+          }
+        },
+        "toolMessages": {},
+        "isRunning": false,
+        "runCalled": false
+      }
+    },
+    {
+      "id": "protein",
+      "type": "workflowNode",
+      "position": {
+        "x": 3.9999999999999574,
+        "y": 329.99999999999994
+      },
+      "data": {
+        "label": "Extract Protein Translation (gffread)",
+        "outputs": {},
+        "output": {},
+        "paramValues": {
+          "stop_as_star": {
+            "enabled": false,
+            "value": ""
+          },
+          "write_exon_coords": {
+            "enabled": false,
+            "value": ""
+          },
+          "keep_attrs": {
+            "enabled": false,
+            "value": ""
+          },
+          "max_intron": {
+            "enabled": false,
+            "value": ""
+          },
+          "min_length": {
+            "enabled": false,
+            "value": ""
+          },
+          "range": {
+            "enabled": false,
+            "value": ""
+          },
+          "range_strict": {
+            "enabled": false,
+            "value": ""
+          },
+          "jmatch": {
+            "enabled": false,
+            "value": ""
+          },
+          "coding_only": {
+            "enabled": false,
+            "value": ""
+          },
+          "discard_noncanonical": {
+            "enabled": false,
+            "value": ""
+          },
+          "discard_incomplete_cds": {
+            "enabled": false,
+            "value": ""
+          },
+          "drop_inframe_stop": {
+            "enabled": false,
+            "value": ""
+          },
+          "adjust_phase": {
+            "enabled": false,
+            "value": ""
+          },
+          "no_pseudo": {
+            "enabled": false,
+            "value": ""
+          },
+          "ids_keep": {
+            "enabled": false,
+            "value": ""
+          },
+          "ids_drop": {
+            "enabled": false,
+            "value": ""
+          },
+          "in_bed": {
+            "enabled": false,
+            "value": ""
+          },
+          "in_tlf": {
+            "enabled": false,
+            "value": ""
+          }
+        },
+        "toolMessages": {},
+        "isRunning": false,
+        "runCalled": false
+      }
+    },
+    {
+      "id": "exon-comp",
+      "type": "workflowNode",
+      "position": {
+        "x": 347.1428571428571,
+        "y": 474
+      },
+      "data": {
+        "label": "Comp (SEQTK)",
+        "outputs": {},
+        "output": {},
+        "paramValues": {
+          "command": {
+            "enabled": true,
+            "value": "comp"
+          },
+          "unique": {
+            "enabled": false,
+            "value": ""
+          },
+          "bed_regions": {
+            "enabled": false,
+            "value": ""
+          }
+        },
+        "toolMessages": {},
+        "isRunning": false,
+        "runCalled": false
+      }
+    },
+    {
+      "id": "exon-info",
+      "type": "workflowNode",
+      "position": {
+        "x": 166.7142857142857,
+        "y": 485.42857142857144
+      },
+      "data": {
+        "label": "Fasta Info (GTO)",
+        "outputs": {},
+        "output": {},
+        "paramValues": {},
+        "toolMessages": {},
+        "isRunning": false,
+        "runCalled": false
+      }
+    },
+    {
+      "id": "cds-aa",
+      "type": "workflowNode",
+      "position": {
+        "x": -188.5714285714286,
+        "y": 530.0000000000001
+      },
+      "data": {
+        "label": "Amino Acid From Fasta (GTO)",
+        "outputs": {},
+        "output": {},
+        "paramValues": {
+          "frame": {
+            "enabled": false,
+            "value": ""
+          }
+        },
+        "toolMessages": {},
+        "isRunning": false,
+        "runCalled": false
+      }
+    },
+    {
+      "id": "cds-aa-info",
+      "type": "workflowNode",
+      "position": {
+        "x": -147.6785714285715,
+        "y": 692.8571428571428
+      },
+      "data": {
+        "label": "Info (GTO)",
+        "outputs": {},
+        "output": {},
+        "paramValues": {},
+        "toolMessages": {},
+        "isRunning": false,
+        "runCalled": false
+      }
+    },
+    {
+      "id": "protein-info",
+      "type": "workflowNode",
+      "position": {
+        "x": 4.714285714285694,
+        "y": 493.42857142857144
+      },
+      "data": {
+        "label": "Info (GTO)",
+        "outputs": {},
+        "output": {},
+        "paramValues": {},
+        "toolMessages": {},
+        "isRunning": false,
+        "runCalled": false
+      }
+    },
+    {
+      "id": "o-genome",
+      "type": "outputWorkflowNode",
+      "position": {
+        "x": 520,
+        "y": 432.85714285714295
+      },
+      "data": {
+        "label": "Output",
+        "output": {},
+        "outputs": {},
+        "toolMessages": {},
+        "runCalled": false,
+        "isRunning": false
+      }
+    },
+    {
+      "id": "o-exon-comp",
+      "type": "outputWorkflowNode",
+      "position": {
+        "x": 361.4285714285714,
+        "y": 574.2857142857142
+      },
+      "data": {
+        "label": "Output",
+        "output": {},
+        "outputs": {},
+        "toolMessages": {},
+        "runCalled": false,
+        "isRunning": false
+      }
+    },
+    {
+      "id": "o-exon-info",
+      "type": "outputWorkflowNode",
+      "position": {
+        "x": 180.2857142857142,
+        "y": 598.5714285714287
+      },
+      "data": {
+        "label": "Output",
+        "output": {},
+        "outputs": {},
+        "toolMessages": {},
+        "runCalled": false,
+        "isRunning": false
+      }
+    },
+    {
+      "id": "o-cds-aa",
+      "type": "outputWorkflowNode",
+      "position": {
+        "x": -147.71427699497775,
+        "y": 820.0000000000001
+      },
+      "data": {
+        "label": "Output",
+        "output": {},
+        "outputs": {},
+        "toolMessages": {},
+        "runCalled": false,
+        "isRunning": false
+      }
+    },
+    {
+      "id": "o-protein",
+      "type": "outputWorkflowNode",
+      "position": {
+        "x": 18.285714285714175,
+        "y": 622.8571428571429
+      },
+      "data": {
+        "label": "Output",
+        "output": {},
+        "outputs": {},
+        "toolMessages": {},
+        "runCalled": false,
+        "isRunning": false
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "type": "workflowEdge",
+      "source": "in-genome",
+      "sourceHandle": "out",
+      "target": "info-genome",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e2",
+      "type": "workflowEdge",
+      "source": "in-gff",
+      "sourceHandle": "out",
+      "target": "exons",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e3",
+      "type": "workflowEdge",
+      "source": "in-genome",
+      "sourceHandle": "out",
+      "target": "exons",
+      "targetHandle": "genome"
+    },
+    {
+      "id": "e4",
+      "type": "workflowEdge",
+      "source": "in-gff",
+      "sourceHandle": "out",
+      "target": "cds",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e5",
+      "type": "workflowEdge",
+      "source": "in-genome",
+      "sourceHandle": "out",
+      "target": "cds",
+      "targetHandle": "genome"
+    },
+    {
+      "id": "e6",
+      "type": "workflowEdge",
+      "source": "in-gff",
+      "sourceHandle": "out",
+      "target": "protein",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e7",
+      "type": "workflowEdge",
+      "source": "in-genome",
+      "sourceHandle": "out",
+      "target": "protein",
+      "targetHandle": "genome"
+    },
+    {
+      "id": "e8",
+      "type": "workflowEdge",
+      "source": "exons",
+      "sourceHandle": "out",
+      "target": "exon-comp",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e9",
+      "type": "workflowEdge",
+      "source": "exons",
+      "sourceHandle": "out",
+      "target": "exon-info",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e10",
+      "type": "workflowEdge",
+      "source": "cds",
+      "sourceHandle": "out",
+      "target": "cds-aa",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e11",
+      "type": "workflowEdge",
+      "source": "cds-aa",
+      "sourceHandle": "out",
+      "target": "cds-aa-info",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e12",
+      "type": "workflowEdge",
+      "source": "protein",
+      "sourceHandle": "out",
+      "target": "protein-info",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e13",
+      "type": "workflowEdge",
+      "source": "info-genome",
+      "sourceHandle": "out",
+      "target": "o-genome",
+      "targetHandle": null
+    },
+    {
+      "id": "e14",
+      "type": "workflowEdge",
+      "source": "exon-comp",
+      "sourceHandle": "out",
+      "target": "o-exon-comp",
+      "targetHandle": null
+    },
+    {
+      "id": "e15",
+      "type": "workflowEdge",
+      "source": "exon-info",
+      "sourceHandle": "out",
+      "target": "o-exon-info",
+      "targetHandle": null
+    },
+    {
+      "id": "e16",
+      "type": "workflowEdge",
+      "source": "cds-aa-info",
+      "sourceHandle": "out",
+      "target": "o-cds-aa",
+      "targetHandle": null
+    },
+    {
+      "id": "e17",
+      "type": "workflowEdge",
+      "source": "protein-info",
+      "sourceHandle": "out",
+      "target": "o-protein",
+      "targetHandle": null
+    }
+  ],
+  "viewport": {
+    "x": 338.9614645144902,
+    "y": -20.55572724832126,
+    "zoom": 0.9602133020134181
+  }
+}

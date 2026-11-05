@@ -1,0 +1,619 @@
+{
+  "nodes": [
+    {
+      "id": "in-seqs",
+      "type": "inputWorkflowNode",
+      "position": {
+        "x": 50,
+        "y": 300
+      },
+      "data": {
+        "label": "Input",
+        "outputs": {
+          "out": {
+            "kind": "text",
+            "data": ">species_A_geneX\nATGCGTACGTAGCTGACTGATCGATCGTAGCTAGCGTAGCTGCATCGATCGGTAGCTAGCGTACGTAGCTAGCTGATCGTAGCTAGCTAGCTAGCTGAT\n>species_B_geneX\nATGCGTACGTAGCTGACTGATCGATCGTAGCTAGCGTAGCTGCATCGATCGGTAGCAAGCGTACGTAGCTAGCTGATCGTAGCTAGCTAGCTAGCTGAT\n>species_C_geneX\nATGCGTACGTAGCTGACTGAACGATCGTAGCTAGCGTAGCTGCATCGATCGGTAGCTAGCGTACGTAGCTAGCTGATCGTAGCTAGCTAGCTAGCTGGT\n>species_D_geneX\nATGCGTACGTAGCTGACTGATCGATCGAAGCTAGCGTAGCTGCATCGATCGGTAGCTAGCGTACGTAGCTAGCTGATCGTAGCTAGCTAGCTAGCTGAT\n>species_E_geneX\nATGCGTACGTAGCTGACTGATCGATCGTAGCTAGCGTAGCTGCATCGATCGGTAGCTAGCATACGTAGCTAGCTGATCGTAGCTAGCTAGCTAGCTGAT\n>species_F_geneX\nATGCGTACGTAGCTGACTGATCGAACGTAGCTAGCGTAGCTGCATCGATCGGTAGCTAGCGTACGTAGCTAGCTGATCGTAGCTAGCTAGCTAGCTAAT\n"
+          }
+        },
+        "output": {},
+        "toolMessages": {},
+        "runCalled": false,
+        "isRunning": false
+      }
+    },
+    {
+      "id": "info-pre",
+      "type": "workflowNode",
+      "position": {
+        "x": 513.4278829563763,
+        "y": 475.5535368974233
+      },
+      "data": {
+        "label": "Fasta Info (GTO)",
+        "outputs": {},
+        "output": {},
+        "paramValues": {},
+        "toolMessages": {},
+        "isRunning": false,
+        "runCalled": false
+      }
+    },
+    {
+      "id": "comp",
+      "type": "workflowNode",
+      "position": {
+        "x": 257.4402697205099,
+        "y": 468.03137913334433
+      },
+      "data": {
+        "label": "Comp (SEQTK)",
+        "outputs": {},
+        "output": {},
+        "paramValues": {
+          "command": {
+            "enabled": true,
+            "value": "comp"
+          },
+          "unique": {
+            "enabled": false,
+            "value": ""
+          },
+          "bed_regions": {
+            "enabled": false,
+            "value": ""
+          }
+        },
+        "toolMessages": {},
+        "isRunning": false,
+        "runCalled": false
+      }
+    },
+    {
+      "id": "aa",
+      "type": "workflowNode",
+      "position": {
+        "x": -140.66666666666669,
+        "y": 457.3333333333333
+      },
+      "data": {
+        "label": "Amino Acid From Fasta (GTO)",
+        "outputs": {},
+        "output": {},
+        "paramValues": {
+          "frame": {
+            "enabled": false,
+            "value": ""
+          }
+        },
+        "toolMessages": {},
+        "isRunning": false,
+        "runCalled": false
+      }
+    },
+    {
+      "id": "aa-info",
+      "type": "workflowNode",
+      "position": {
+        "x": -263.22320871063715,
+        "y": 674.0934262293946
+      },
+      "data": {
+        "label": "Info (GTO)",
+        "outputs": {},
+        "output": {},
+        "paramValues": {},
+        "toolMessages": {},
+        "isRunning": false,
+        "runCalled": false
+      }
+    },
+    {
+      "id": "muscle",
+      "type": "workflowNode",
+      "position": {
+        "x": 59.33333333333334,
+        "y": 468
+      },
+      "data": {
+        "label": "Align (muscle)",
+        "outputs": {},
+        "output": {},
+        "paramValues": {
+          "nucleotide": {
+            "enabled": false,
+            "value": ""
+          },
+          "amino": {
+            "enabled": false,
+            "value": ""
+          },
+          "perm": {
+            "enabled": false,
+            "value": ""
+          },
+          "perturb": {
+            "enabled": false,
+            "value": ""
+          },
+          "stratified": {
+            "enabled": false,
+            "value": ""
+          },
+          "diversified": {
+            "enabled": false,
+            "value": ""
+          },
+          "replicates": {
+            "enabled": false,
+            "value": ""
+          },
+          "max_gap_fraction": {
+            "enabled": false,
+            "value": ""
+          },
+          "min_confidence": {
+            "enabled": false,
+            "value": ""
+          },
+          "threads": {
+            "enabled": false,
+            "value": 1
+          }
+        },
+        "toolMessages": {},
+        "isRunning": false,
+        "runCalled": false
+      }
+    },
+    {
+      "id": "muscle-info",
+      "type": "workflowNode",
+      "position": {
+        "x": 380,
+        "y": 712
+      },
+      "data": {
+        "label": "Info (GTO)",
+        "outputs": {},
+        "output": {},
+        "paramValues": {},
+        "toolMessages": {},
+        "isRunning": false,
+        "runCalled": false
+      }
+    },
+    {
+      "id": "disperse",
+      "type": "workflowNode",
+      "position": {
+        "x": -76.83663613587181,
+        "y": 699.1886870230757
+      },
+      "data": {
+        "label": "Disperse (muscle)",
+        "outputs": {},
+        "output": {},
+        "paramValues": {},
+        "toolMessages": {},
+        "isRunning": false,
+        "runCalled": false
+      }
+    },
+    {
+      "id": "tree",
+      "type": "workflowNode",
+      "position": {
+        "x": 122.10046818976969,
+        "y": 700.1257913487171
+      },
+      "data": {
+        "label": "Build Tree (FastTree)",
+        "outputs": {},
+        "output": {},
+        "paramValues": {
+          "nucleotide": {
+            "enabled": true,
+            "value": ""
+          },
+          "gtr": {
+            "enabled": true,
+            "value": ""
+          },
+          "lg": {
+            "enabled": false,
+            "value": ""
+          },
+          "wag": {
+            "enabled": false,
+            "value": ""
+          },
+          "cat": {
+            "enabled": false,
+            "value": ""
+          },
+          "nocat": {
+            "enabled": false,
+            "value": ""
+          },
+          "gamma": {
+            "enabled": false,
+            "value": ""
+          },
+          "noml": {
+            "enabled": false,
+            "value": ""
+          },
+          "mllen": {
+            "enabled": false,
+            "value": ""
+          },
+          "mlnni": {
+            "enabled": false,
+            "value": ""
+          },
+          "mlacc": {
+            "enabled": false,
+            "value": ""
+          },
+          "nni": {
+            "enabled": false,
+            "value": ""
+          },
+          "spr": {
+            "enabled": false,
+            "value": ""
+          },
+          "sprlength": {
+            "enabled": false,
+            "value": ""
+          },
+          "slownni": {
+            "enabled": false,
+            "value": ""
+          },
+          "slow": {
+            "enabled": false,
+            "value": ""
+          },
+          "fastest": {
+            "enabled": false,
+            "value": ""
+          },
+          "pseudo": {
+            "enabled": false,
+            "value": ""
+          },
+          "rawdist": {
+            "enabled": false,
+            "value": ""
+          },
+          "matrix": {
+            "enabled": false,
+            "value": ""
+          },
+          "nomatrix": {
+            "enabled": false,
+            "value": ""
+          },
+          "trans": {
+            "enabled": false,
+            "value": ""
+          },
+          "nj": {
+            "enabled": false,
+            "value": ""
+          },
+          "bionj": {
+            "enabled": false,
+            "value": ""
+          },
+          "boot": {
+            "enabled": false,
+            "value": ""
+          },
+          "nosupport": {
+            "enabled": false,
+            "value": ""
+          },
+          "nome": {
+            "enabled": false,
+            "value": ""
+          },
+          "intree": {
+            "enabled": false,
+            "value": ""
+          },
+          "intree1": {
+            "enabled": false,
+            "value": ""
+          },
+          "constraints": {
+            "enabled": false,
+            "value": ""
+          },
+          "constraintWeight": {
+            "enabled": false,
+            "value": ""
+          },
+          "seed": {
+            "enabled": false,
+            "value": ""
+          },
+          "top": {
+            "enabled": false,
+            "value": ""
+          },
+          "notop": {
+            "enabled": false,
+            "value": ""
+          },
+          "topm": {
+            "enabled": false,
+            "value": ""
+          },
+          "close": {
+            "enabled": false,
+            "value": ""
+          },
+          "refresh": {
+            "enabled": false,
+            "value": ""
+          },
+          "quiet": {
+            "enabled": false,
+            "value": ""
+          },
+          "nopr": {
+            "enabled": false,
+            "value": ""
+          },
+          "quote": {
+            "enabled": false,
+            "value": ""
+          }
+        },
+        "toolMessages": {},
+        "isRunning": false,
+        "runCalled": false
+      }
+    },
+    {
+      "id": "o-info-pre",
+      "type": "outputWorkflowNode",
+      "position": {
+        "x": 539.6918524179441,
+        "y": 582.4906412230647
+      },
+      "data": {
+        "label": "Output",
+        "output": {},
+        "outputs": {},
+        "toolMessages": {},
+        "runCalled": false,
+        "isRunning": false
+      }
+    },
+    {
+      "id": "o-comp",
+      "type": "outputWorkflowNode",
+      "position": {
+        "x": 336.2138727743531,
+        "y": 549.0754198461623
+      },
+      "data": {
+        "label": "Output",
+        "output": {},
+        "outputs": {},
+        "toolMessages": {},
+        "runCalled": false,
+        "isRunning": false
+      }
+    },
+    {
+      "id": "o-tree",
+      "type": "outputWorkflowNode",
+      "position": {
+        "x": 119.97467684105268,
+        "y": 818.2828244231084
+      },
+      "data": {
+        "label": "Output",
+        "output": {},
+        "outputs": {},
+        "toolMessages": {},
+        "runCalled": false,
+        "isRunning": false
+      }
+    },
+    {
+      "id": "o-muscle-info",
+      "type": "outputWorkflowNode",
+      "position": {
+        "x": 440.0000000000001,
+        "y": 830
+      },
+      "data": {
+        "label": "Output",
+        "output": {},
+        "outputs": {},
+        "toolMessages": {},
+        "runCalled": false,
+        "isRunning": false
+      }
+    },
+    {
+      "id": "o-disperse",
+      "type": "outputWorkflowNode",
+      "position": {
+        "x": -73.21401018202307,
+        "y": 812.2828244231085
+      },
+      "data": {
+        "label": "Output",
+        "output": {},
+        "outputs": {},
+        "toolMessages": {},
+        "runCalled": false,
+        "isRunning": false
+      }
+    },
+    {
+      "id": "o-aa",
+      "type": "outputWorkflowNode",
+      "position": {
+        "x": -261.257913487171,
+        "y": 793.6538676795229
+      },
+      "data": {
+        "label": "Output",
+        "output": {},
+        "outputs": {},
+        "toolMessages": {},
+        "runCalled": false,
+        "isRunning": false
+      }
+    },
+    {
+      "id": "output-1779025723258",
+      "type": "outputWorkflowNode",
+      "data": {
+        "label": "Output",
+        "output": {},
+        "outputs": {},
+        "toolMessages": {},
+        "runCalled": false,
+        "isRunning": false
+      },
+      "position": {
+        "x": -405.6731274324129,
+        "y": 574.5346819358826
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e3",
+      "type": "workflowEdge",
+      "source": "in-seqs",
+      "sourceHandle": "out",
+      "target": "muscle",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e4",
+      "type": "workflowEdge",
+      "source": "in-seqs",
+      "sourceHandle": "out",
+      "target": "aa",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e5",
+      "type": "workflowEdge",
+      "source": "muscle",
+      "sourceHandle": "out",
+      "target": "tree",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e6",
+      "type": "workflowEdge",
+      "source": "muscle",
+      "sourceHandle": "out",
+      "target": "muscle-info",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e7",
+      "type": "workflowEdge",
+      "source": "muscle",
+      "sourceHandle": "out",
+      "target": "disperse",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e8",
+      "type": "workflowEdge",
+      "source": "aa",
+      "sourceHandle": "out",
+      "target": "aa-info",
+      "targetHandle": "in"
+    },
+    {
+      "id": "e9",
+      "type": "workflowEdge",
+      "source": "info-pre",
+      "sourceHandle": "out",
+      "target": "o-info-pre",
+      "targetHandle": null
+    },
+    {
+      "id": "e10",
+      "type": "workflowEdge",
+      "source": "comp",
+      "sourceHandle": "out",
+      "target": "o-comp",
+      "targetHandle": null
+    },
+    {
+      "id": "e11",
+      "type": "workflowEdge",
+      "source": "tree",
+      "sourceHandle": "out",
+      "target": "o-tree",
+      "targetHandle": null
+    },
+    {
+      "id": "e12",
+      "type": "workflowEdge",
+      "source": "muscle-info",
+      "sourceHandle": "out",
+      "target": "o-muscle-info",
+      "targetHandle": null
+    },
+    {
+      "id": "e13",
+      "type": "workflowEdge",
+      "source": "disperse",
+      "sourceHandle": "out",
+      "target": "o-disperse",
+      "targetHandle": null
+    },
+    {
+      "id": "e14",
+      "type": "workflowEdge",
+      "source": "aa-info",
+      "sourceHandle": "out",
+      "target": "o-aa",
+      "targetHandle": null
+    },
+    {
+      "source": "aa",
+      "sourceHandle": "out",
+      "target": "output-1779025723258",
+      "type": "workflowEdge",
+      "id": "xy-edge__aaout-output-1779025723258"
+    },
+    {
+      "source": "in-seqs",
+      "sourceHandle": "out",
+      "target": "comp",
+      "targetHandle": "in",
+      "type": "workflowEdge",
+      "id": "xy-edge__in-seqsout-compin"
+    },
+    {
+      "source": "in-seqs",
+      "sourceHandle": "out",
+      "target": "info-pre",
+      "targetHandle": "in",
+      "type": "workflowEdge",
+      "id": "xy-edge__in-seqsout-info-prein"
+    }
+  ],
+  "viewport": {
+    "x": 430.7653315156093,
+    "y": -144.20328918121197,
+    "zoom": 0.9408261075137873
+  }
+}
