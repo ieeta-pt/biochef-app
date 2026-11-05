@@ -162,7 +162,6 @@ const ToolTestingPanel = ({ tool, inputData, setOutputData, setIsLoading }) => {
 
             const toolConfig = getTool(tool.name)
             if (!toolConfig) {
-                showNotification(`Configuration for tool ${tool.name} not found.`, 'error');
                 throw new Error(`Configuration for tool ${tool.name} not found.`);
             }
 
@@ -237,6 +236,7 @@ const ToolTestingPanel = ({ tool, inputData, setOutputData, setIsLoading }) => {
 
         } catch (error) {
             console.error(`Failed to execute tool ${tool.name}:`, error);
+            showNotification(`Could not run ${tool.name}: ${error.message}`, 'error');
             throw error;
         }
     };

@@ -614,37 +614,47 @@ const RecipePanel = forwardRef(({ selectedNode, setSelectedNode, indexLoaded }, 
       }
     }
 
-    const { outputs, errors } = await runTools(
-      toolInvocations,
-      (nodeId, outputs, errors) => {
-        const messages = {
-          ...(getNode(nodeId).data.toolMessages ?? {}),
-          "Output": {},
-        };
+    try {
+      const { outputs, errors } = await runTools(
+        toolInvocations,
+        (nodeId, outputs, errors) => {
+          const messages = {
+            ...(getNode(nodeId).data.toolMessages ?? {}),
+            "Output": {},
+          };
 
-        const error = errors.join("\n")
-        if (error) {
-          const stderrLines = error.split('\n').map(line => line.trim()).filter(Boolean);
+          const error = errors.join("\n")
+          if (error) {
+            const stderrLines = error.split('\n').map(line => line.trim()).filter(Boolean);
 
-          const hasOutput = Object.values(outputs).some(
-            value => value !== undefined && value !== null && value.data !== ''
-          );
-          const failed = error && !hasOutput
+            const hasOutput = Object.values(outputs).some(
+              value => value !== undefined && value !== null && value.data !== ''
+            );
+            const failed = error && !hasOutput
 
-          if (failed) {
-            messages["Output"].error = stderrLines;
-          } else {
-            messages["Output"].info = stderrLines;
+            if (failed) {
+              messages["Output"].error = stderrLines;
+            } else {
+              messages["Output"].info = stderrLines;
+            }
           }
-        }
 
-        updateNodeData(nodeId, {
-          outputs,
-          toolMessages: messages,
-          isRunning: false
-        })
+          updateNodeData(nodeId, {
+            outputs,
+            toolMessages: messages,
+            isRunning: false
+          })
+        }
+      )
+    } catch (error) {
+      console.error("Failed to run the workflow:", error);
+      showNotification(`Could not run the workflow: ${error.message}`, "error");
+      for (const nodeId of component) {
+        if (getNode(nodeId)?.type == "workflowNode") {
+          updateNodeData(nodeId, { isRunning: false })
+        }
       }
-    )
+    }
   }
 
   // TODO
