@@ -306,6 +306,33 @@ function validateSnd(content) {
   return width !== null;
 }
 
+function validateScoringMatrix(content) {
+  // NCBI/BLAST substitution matrix: '#' comments, a header of residue
+  // letters, then one row per letter with that letter and an integer
+  // score for every column (NUC.4.2 has more rows than columns)
+  if (!content?.trim()) return false;
+
+  const letter = /^[A-Za-z*]$/;
+  let columns = null;
+  const rows = new Set();
+  for (const raw of content.trim().split('\n')) {
+    const line = raw.trim();
+    if (!line || line.startsWith('#')) continue;
+    const fields = line.split(/\s+/);
+    if (columns === null) {
+      if (!fields.every(field => letter.test(field))) return false;
+      if (new Set(fields).size !== fields.length) return false;
+      columns = fields;
+      continue;
+    }
+    if (fields.length !== columns.length + 1) return false;
+    if (!letter.test(fields[0]) || rows.has(fields[0])) return false;
+    if (!fields.slice(1).every(value => /^[+-]?\d+$/.test(value))) return false;
+    rows.add(fields[0]);
+  }
+  return rows.size > 0;
+}
+
 function validateVcf(content) {
   if (!content) return false;
   const lines = content.trim().split(/\r?\n/);
@@ -558,6 +585,7 @@ const validators = {
   wig: validateWig,
   clustal: validateClustal,
   snd: validateSnd,
+  scoringMatrix: validateScoringMatrix,
   bigbed: validateBigBed,
   bigwig: validateBigWig,
   fmd: validateFmd,
