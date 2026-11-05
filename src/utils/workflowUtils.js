@@ -3,20 +3,43 @@ import { detectAllDataTypes } from "./detectDataType";
 import { isTypeBinary } from "./typeDefinitions";
 import { makeReferenceDataValue } from "./dataValue";
 import { putBlob } from "./blobStore"
+import logger from "./logger"
 
-function sanitizeWorkflowNodes(nodes, { keepBinaryAsReference = false } = {}) {
-  return nodes.map(node => {
+// Text up to this length stays inline in localStorage, larger text goes to IndexedDB like binary data
+const INLINE_TEXT_LIMIT = 100000
+
+// The workflow is saved on every change, so only write a value that changed since it was last stored
+const storedValues = new Map()
+
+function storeBlobOnce(blobId, value) {
+  if (storedValues.get(blobId) === value.data) return
+  storedValues.set(blobId, value.data)
+  putBlob(blobId, value.data, value.kind).catch((error) => {
+    storedValues.delete(blobId)
+    logger.error(error)
+  })
+}
+
+function storeAsReference(value) {
+  return value?.kind === "binary" || (value?.kind === "text" && value.data.length > INLINE_TEXT_LIMIT)
+}
+
+function sanitizeWorkflowNodes(nodes, { keepValuesAsReference = false } = {}) {
+  const referencedIds = new Set()
+
+  const sanitized = nodes.map(node => {
     const outputs = {};
 
     if (node.type === "inputWorkflowNode") {
       for (const [key, value] of Object.entries(node.data.outputs || {})) {
-        if (value?.kind === "text") {
-          outputs[key] = value;
-        }
-        else if (value?.kind === "binary" && keepBinaryAsReference) {
+        if (keepValuesAsReference && storeAsReference(value)) {
           const blobId = node.id + key
-          putBlob(blobId, value.data, "binary")
+          referencedIds.add(blobId)
+          storeBlobOnce(blobId, value)
           outputs[key] = makeReferenceDataValue(blobId);
+        }
+        else if (value?.kind === "text") {
+          outputs[key] = value;
         }
       }
     }
@@ -33,17 +56,26 @@ function sanitizeWorkflowNodes(nodes, { keepBinaryAsReference = false } = {}) {
       }
     };
   });
+
+  // forget values of inputs that are gone, so a deleted large input is not kept in memory
+  if (keepValuesAsReference) {
+    for (const blobId of storedValues.keys()) {
+      if (!referencedIds.has(blobId)) storedValues.delete(blobId)
+    }
+  }
+
+  return sanitized
 }
 
 export function prepareWorkflowNodesForLocalStorage(nodes) {
   return sanitizeWorkflowNodes(nodes, {
-    keepBinaryAsReference: true
+    keepValuesAsReference: true
   });
 }
 
 export function prepareWorkflowNodesForExport(nodes) {
   return sanitizeWorkflowNodes(nodes, {
-    keepBinaryAsReference: false
+    keepValuesAsReference: false
   });
 }
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useContext, useCallback, useImperativeHandle, forwardRef, useState } from 'react';
+import React, { useEffect, useContext, useCallback, useImperativeHandle, forwardRef, useState, useRef } from 'react';
 import { ReactFlow, useStoreApi, useReactFlow, useNodesState, useEdgesState, applyNodeChanges, applyEdgeChanges, addEdge, Background, BackgroundVariant, ViewportPortal, Panel } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { Paper, Button, Box, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
@@ -12,7 +12,7 @@ import { getNodeHandles, isValidWorkflowConnection, prepareWorkflowNodesForExpor
 import logger from '../utils/logger';
 import { resolveCollisions } from '../utils/resolveNodeCollisions';
 import { getBlob, removeUnreferencedBlobs } from '../utils/blobStore';
-import { makeBinaryDataValue } from '../utils/dataValue';
+import { makeBinaryDataValue, makeTextDataValue } from '../utils/dataValue';
 
 const RecipePanel = forwardRef(({ selectedNode, setSelectedNode, indexLoaded }, ref) => {
   const [nodes, setNodes] = useNodesState([]);
@@ -30,6 +30,7 @@ const RecipePanel = forwardRef(({ selectedNode, setSelectedNode, indexLoaded }, 
   const [renderWorklowBoxes, setRenderWorklowBoxes] = useState(true);
 
   const [workflowLoaded, setWorkflowLoaded] = useState(false);
+  const saveFailureShown = useRef(false);
 
   useEffect(() => {
     if (!indexLoaded) return;
@@ -52,7 +53,9 @@ const RecipePanel = forwardRef(({ selectedNode, setSelectedNode, indexLoaded }, 
               if (value?.kind === "reference") {
                 const blob = await getBlob(value.data)
                 blobsToKeep.push(value.data)
-                node.data.outputs[key] = makeBinaryDataValue(blob?.bytes ?? new Uint8Array)
+                node.data.outputs[key] = blob?.type === "text"
+                  ? makeTextDataValue(blob.bytes)
+                  : makeBinaryDataValue(blob?.bytes ?? new Uint8Array)
               }
             }
           }
@@ -93,7 +96,16 @@ const RecipePanel = forwardRef(({ selectedNode, setSelectedNode, indexLoaded }, 
     const flow = toObject();
     flow.nodes = prepareWorkflowNodesForLocalStorage(flow.nodes)
 
-    localStorage.setItem('workflow', JSON.stringify(flow));
+    try {
+      localStorage.setItem('workflow', JSON.stringify(flow));
+      saveFailureShown.current = false;
+    } catch (error) {
+      logger.error(error);
+      if (!saveFailureShown.current) {
+        saveFailureShown.current = true;
+        showNotification("The workflow could not be saved in the browser, so it will not survive a reload.", 'error');
+      }
+    }
   }, [nodes, edges]);
 
   useEffect(() => {
