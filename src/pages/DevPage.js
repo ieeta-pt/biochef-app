@@ -411,7 +411,7 @@ const DevPage = () => {
     return getAllTools().filter((tool) => {
       return (
         tool.runtime.modes.includes("native") &&
-        !seenTools.includes(tool.name) && (tool.name.includes("(muscle)"))
+        !seenTools.includes(tool.name) // && (tool.name.includes("(muscle)"))
       );
     });
   }
