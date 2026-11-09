@@ -152,7 +152,7 @@ const DevPage = () => {
     }
   }
 
-  async function handleRun(fileInputs = inputValue) {
+  async function handleRun(fileInputs = inputValue, timerOnly = false) {
     const initialOutputValues = {};
     currentTool.io.outputs.forEach((output) => {
       initialOutputValues[output.name] = makeTextDataValue("");
@@ -225,7 +225,7 @@ const DevPage = () => {
     setWasmTime(currentWasmTime);
 
     const nativeResult = result.outputs[currentTool.name];
-    setOutputValue(nativeResult);
+    if (!timerOnly) setOutputValue(nativeResult);
 
     // Prepare workflow for agent
     const fileData = {};
@@ -294,27 +294,28 @@ const DevPage = () => {
     const agentResult = agentResponse?.outputs ?? {};
     const awaitAgentTime = agentResponse?.time ?? -1;
 
-    setAgentOutputValue(agentResult);
+    if (!timerOnly) setAgentOutputValue(agentResult);
 
-    // Calculate diffs
-    const diffValues = {};
+    if (!timerOnly) {
+      // Calculate diffs
+      const diffValues = {};
 
-    for (const output of currentTool.io.outputs) {
-      const outputName = output.name;
+      for (const output of currentTool.io.outputs) {
+        const outputName = output.name;
 
-      const nativeText = nativeResult?.[outputName]?.data ?? "";
-      const agentText = agentResult?.[outputName]?.data ?? "";
+        const nativeText = nativeResult?.[outputName]?.data ?? "";
+        const agentText = agentResult?.[outputName]?.data ?? "";
 
-      const diffText = createPatch(
-        currentTool.name + " - " + outputName,
-        nativeText,
-        agentText
-      );
+        const diffText = createPatch(
+          currentTool.name + " - " + outputName,
+          nativeText,
+          agentText
+        );
 
-      diffValues[outputName] = makeTextDataValue(diffText);
+        diffValues[outputName] = makeTextDataValue(diffText);
+      }
+      setDiffValue(diffValues);
     }
-
-    setDiffValue(diffValues);
 
     return {
       wasm: currentWasmTime,
@@ -325,7 +326,6 @@ const DevPage = () => {
   async function batchRun() {
     const folderInput = document.createElement("input");
     folderInput.type = "file";
-    folderInput.webkitdirectory = true;
     folderInput.multiple = true;
 
     setShowOnlyTimers(true);
@@ -363,7 +363,7 @@ const DevPage = () => {
 
         for (let i = 0; i < 5; i++) {
           logger.info(`[BatchRun] Running run ${i} for file ${file.name}`)
-          const times = await handleRun(fileInputs);
+          const times = await handleRun(fileInputs, true);
 
           wasmTimes.push(times.wasm);
           agentTimes.push(times.agent);
@@ -411,7 +411,7 @@ const DevPage = () => {
     return getAllTools().filter((tool) => {
       return (
         tool.runtime.modes.includes("native") &&
-        !seenTools.includes(tool.name) && (tool.name.includes("(SEQTK)") || tool.name.includes("(muscle)"))
+        !seenTools.includes(tool.name) && (tool.name.includes("(muscle)"))
       );
     });
   }
