@@ -9,6 +9,7 @@ import {
   useMediaQuery
 } from '@mui/material';
 import React, { useCallback, useEffect, useState, useMemo, useRef } from 'react';
+import { useNodesData, useReactFlow } from '@xyflow/react';
 import { getTool } from '../utils/toolUtils';
 import InputPanel from '../components/InputPanel';
 import ErrorBoundary from '/src/components/ErrorBoundary'; // Ensure this component exists
@@ -38,7 +39,15 @@ const WorkflowPage = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  const [selectedNode, setSelectedNode] = useState(null);
+  // Only the selection (which node) is kept here. Its data is read live from
+  // the graph, so the side panel follows a run and edits go straight into it.
+  const [selection, setSelectedNode] = useState(null);
+  const liveSelectedNode = useNodesData(selection?.id ?? "");
+  const { updateNodeData } = useReactFlow();
+  const selectedNode = useMemo(() => {
+    if (!selection || !liveSelectedNode) return null;
+    return { ...selection, type: liveSelectedNode.type, data: liveSelectedNode.data };
+  }, [selection, liveSelectedNode]);
   const selectedNodeData = useMemo(() => {
     return selectedNode ? selectedNode.data : null;
   }, [selectedNode]);
@@ -69,13 +78,8 @@ const WorkflowPage = () => {
   };
 
   const updateSelectedNodeData = (newData) => {
-    setSelectedNode((prevNode) => ({
-      ...prevNode,
-      data: {
-        ...prevNode.data,
-        ...newData,
-      },
-    }));
+    if (!selection) return;
+    updateNodeData(selection.id, newData);
   };
 
   const handleUpdateSelectedInputNode = (dataValue) => {

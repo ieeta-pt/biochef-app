@@ -96,22 +96,6 @@ const RecipePanel = forwardRef(({ selectedNode, setSelectedNode, indexLoaded }, 
     localStorage.setItem('workflow', JSON.stringify(flow));
   }, [nodes, edges]);
 
-  useEffect(() => {
-    if (!selectedNode) return;
-    const node = nodes.find((n) => n.id === selectedNode.id);
-    if (JSON.stringify(node?.data) !== JSON.stringify(selectedNode.data)) {
-      updateNodeData(selectedNode.id, selectedNode.data);
-    }
-  }, [selectedNode?.data]);
-
-  // The side panel shows selectedNode, a copy taken when the node was selected.
-  // An Output node's data changes during a run, so the copy has to follow it.
-  useEffect(() => {
-    if (selectedNode?.type != "outputWorkflowNode") return;
-    const node = nodes.find((n) => n.id === selectedNode.id);
-    if (node && node.data !== selectedNode.data) setSelectedNode(node);
-  }, [nodes]);
-
   const onNodesChange = useCallback((changes) => {
     setNodes((prev) => applyNodeChanges(changes, prev));
   }, []);
