@@ -96,14 +96,6 @@ const RecipePanel = forwardRef(({ selectedNode, setSelectedNode, indexLoaded }, 
     localStorage.setItem('workflow', JSON.stringify(flow));
   }, [nodes, edges]);
 
-  useEffect(() => {
-    if (!selectedNode) return;
-    const node = nodes.find((n) => n.id === selectedNode.id);
-    if (JSON.stringify(node?.data) !== JSON.stringify(selectedNode.data)) {
-      updateNodeData(selectedNode.id, selectedNode.data);
-    }
-  }, [selectedNode?.data]);
-
   const onNodesChange = useCallback((changes) => {
     setNodes((prev) => applyNodeChanges(changes, prev));
   }, []);
