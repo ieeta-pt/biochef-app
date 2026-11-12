@@ -482,6 +482,24 @@ export const typeDefinitions = [
     edgeColor: '#00897b',
     example: '((A:0.1,B:0.1)100:0.2,(C:0.1,D:0.1)100:0.2);\n((A:0.2,B:0.2)95:0.3,(C:0.2,D:0.2)95:0.3);\n((A:0.3,C:0.3)90:0.4,(B:0.3,D:0.3)90:0.4);',
   },
+  {
+    id: 'MAF',
+    validator: 'maf',
+    defaultExtension: '.maf',
+    uploadExtensions: ['.maf'],
+    edgeColor: '#6a1b9a',
+    example: [
+      '##maf version=1',
+      '',
+      'a',
+      's seq1_human 0 89 + 100 TTGATCCTTAATTGCGGCTTCG--ATTACTAAAA-AA-CAGGG-AC-AG-CATCAACCAAA-CTGCTTACATTACT-GTC-GGC-GCAACAGCGCGGAAA',
+      's S1_1  0 96 +  96 TT-A-CCTTAATTGCGGCTTCGATATTACTAAAAAAACCAGGGAACTAGCCATC-ACCAAAACTGCTTACATTACTGGTCG-GCGGCAACAGCGCGGAAA',
+      '',
+      'a',
+      's seq1_human 2 98 + 100 GATCCT-TAATTGCGGCTTCGATTACTAAAAAAC-AGGGACAGCATCAACCAAACTGCTTACATTACTGTCGGCGCAACAGCGCGGAAACCGGTTGTTAA',
+      's S1_2  0 91 -  91 G-TCCTTTAATTGCGGCTTCGATTACTAAAAAACAAGG-AC-GGA-CAACCAAACTGCTTACATTACTGTCGG-GCACCA-C-CGG-AACCGGT-GTTAA',
+    ].join('\n'),
+  },
 ];
 
 export function getTypeDefinitions() {

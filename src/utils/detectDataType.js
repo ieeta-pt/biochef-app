@@ -440,6 +440,41 @@ function validateBcf(content) {
   return validateBinWithMagic(content, BINARY_MAGIC.BCF) || validateBinWithMagic(content, BINARY_MAGIC.BGZF)
 }
 
+// Multiple alignments in MAF: the ##maf header, then blocks of an a line and
+// s lines, each with its sequence's start, size, strand and length, the size
+// the bases in its text, and the texts of a block as long
+function validateMaf(content) {
+  if (typeof content !== 'string') return false;
+  const lines = content.split('\n').map(line => line.replace(/\r$/, ''));
+  if (!lines[0].startsWith('##maf')) return false;
+  let blocks = 0;
+  let width = null;
+  for (const line of lines.slice(1)) {
+    if (!line.trim()) {
+      width = null;
+      continue;
+    }
+    if (line.startsWith('#')) continue;
+    const fields = line.trim().split(/\s+/);
+    if (fields[0] === 'a') {
+      blocks++;
+      width = 0;
+    } else if (width === null) {
+      return false;
+    } else if (fields[0] === 's') {
+      if (fields.length !== 7 || !['+', '-'].includes(fields[4])) return false;
+      if (![fields[2], fields[3], fields[5]].every(f => /^[0-9]+$/.test(f))) return false;
+      const [start, size, length, text] = [Number(fields[2]), Number(fields[3]), Number(fields[5]), fields[6]];
+      if (start + size > length || text.length - (text.match(/-/g) || []).length !== size || !/^[A-Za-z.-]+$/.test(text)) return false;
+      if (width && text.length !== width) return false;
+      width = text.length;
+    } else if (!['i', 'e', 'q'].includes(fields[0])) {
+      return false;
+    }
+  }
+  return blocks > 0;
+}
+
 function validateNewick(content) {
   if (typeof content !== 'string') return false;
   if (content.startsWith('\uFEFF')) content = content.slice(1);
@@ -572,6 +607,7 @@ const validators = {
   csi: validateCsi,
   bcf: validateBcf,
   newick: validateNewick,
+  maf: validateMaf,
   fai: validateFai,
   json: validateJson,
   text: () => true, // Default fallback for TEXT
