@@ -134,6 +134,22 @@ export const typeDefinitions = [
     example: '##fileformat=VCFv4.2\n##contig=<ID=seq,length=98>\n##FILTER=<ID=PASS,Description="All filters passed">\n##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tsample\nseq\t10\t.\tC\tA\t60\tPASS\t.\tGT\t0/1',
   },
   {
+    id: 'CDHIT_CLSTR',
+    validator: 'cdhitClstr',
+    defaultExtension: '.clstr',
+    uploadExtensions: ['.clstr'],
+    edgeColor: '#00838f',
+    example: '>Cluster 0\n0\t316nt, >f1_s1... *\n1\t315nt, >f1_s0... at +/96.19%\n2\t309nt, >f1_s2... at -/95.15%\n>Cluster 1\n0\t298nt, >f2_s4... *',
+  },
+  {
+    id: 'FMF',
+    validator: 'fmf',
+    defaultExtension: '.fmf',
+    uploadExtensions: ['.fmf'],
+    edgeColor: '#9575cd',
+    example: 'sample\tsex:Z:F\tdepth:i:30\theight:f:1.65',
+  },
+  {
     id: 'LIST',
     validator: 'list',
     defaultExtension: '.lst',
@@ -243,6 +259,22 @@ export const typeDefinitions = [
     defaultExtension: '.yak',
     uploadExtensions: ['.yak'],
     edgeColor: '#5d4037',
+    format: 'binary'
+  },
+  {
+    id: 'BGT',
+    validator: 'bgt',
+    defaultExtension: '.bgt',
+    uploadExtensions: ['.bgt', '.tar'],
+    edgeColor: '#4a148c',
+    format: 'binary'
+  },
+  {
+    id: 'SEQUENCE_TAR',
+    validator: 'sequenceTar',
+    defaultExtension: '.tar',
+    uploadExtensions: ['.tar'],
+    edgeColor: '#006064',
     format: 'binary'
   },
   {
