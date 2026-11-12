@@ -212,21 +212,26 @@ const RecipePanel = forwardRef(({ selectedNode, setSelectedNode, indexLoaded }, 
       if (newNode.type == "workflowNode" || newNode.type == "outputWorkflowNode") {
         if (sourceOutputHandles.length > 0 && targetInputHandles.length > 0) {
 
+          // With several compatible inputs the first one is a guess, and a wrong
+          // edge is easy to miss, so that choice is left to the user.
           let newEdgeSourceHandle = null
-          let newEdgeTargetHandle = targetInputHandles[0]
+          let newEdgeTargetHandle = null
           for (const sourceHandle of sourceOutputHandles) {
             const handleOccupied = edges.some(
               e => e.source === referenceNode.id && e.sourceHandle === sourceHandle
             );
+            if (handleOccupied) continue
 
-            const isValidConnection = isValidWorkflowConnection(
-              referenceNode, sourceHandle, newNode, newEdgeTargetHandle
+            const compatibleInputs = targetInputHandles.filter(targetHandle =>
+              isValidWorkflowConnection(referenceNode, sourceHandle, newNode, targetHandle)
             )
+            if (compatibleInputs.length == 0) continue
 
-            if (!handleOccupied && (isValidConnection)) {
+            if (compatibleInputs.length == 1) {
               newEdgeSourceHandle = sourceHandle
-              break
+              newEdgeTargetHandle = compatibleInputs[0]
             }
+            break
           }
 
           if (newEdgeSourceHandle != null) {
