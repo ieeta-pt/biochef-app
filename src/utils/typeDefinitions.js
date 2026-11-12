@@ -134,6 +134,14 @@ export const typeDefinitions = [
     example: '##fileformat=VCFv4.2\n##contig=<ID=seq,length=98>\n##FILTER=<ID=PASS,Description="All filters passed">\n##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tsample\nseq\t10\t.\tC\tA\t60\tPASS\t.\tGT\t0/1',
   },
   {
+    id: 'FMF',
+    validator: 'fmf',
+    defaultExtension: '.fmf',
+    uploadExtensions: ['.fmf'],
+    edgeColor: '#9575cd',
+    example: 'sample\tsex:Z:F\tdepth:i:30\theight:f:1.65',
+  },
+  {
     id: 'LIST',
     validator: 'list',
     defaultExtension: '.lst',
@@ -149,6 +157,54 @@ export const typeDefinitions = [
     uploadExtensions: ['.json', '.jsonl'],
     edgeColor: '#415b54',
     example: '{"samples":[{"id":"sample_1","condition":"control","value":12.5},{"id":"sample_2","condition":"treated","value":18.2}],"metadata":{"organism":"example","assay":"measurement"}}',
+  },
+  {
+    id: 'KRAKEN2_DB',
+    validator: 'kraken2Db',
+    defaultExtension: '.k2d',
+    uploadExtensions: ['.k2d', '.tar'],
+    edgeColor: '#7b1fa2',
+    format: 'binary'
+  },
+  {
+    id: 'KRAKEN2_OUTPUT',
+    validator: 'kraken2Output',
+    defaultExtension: '.kraken',
+    uploadExtensions: ['.kraken'],
+    edgeColor: '#9c27b0',
+    example: 'C\tseq\t2\t98\t2:64',
+  },
+  {
+    id: 'KRAKEN2_REPORT',
+    validator: 'kraken2Report',
+    defaultExtension: '.kreport',
+    uploadExtensions: ['.kreport', '.report'],
+    edgeColor: '#ba68c8',
+    example: '100.00\t1\t0\tR\t1\troot\n100.00\t1\t1\tS\t2\t  seq',
+  },
+  {
+    id: 'KRAKEN2_MPA_REPORT',
+    validator: 'kraken2MpaReport',
+    defaultExtension: '.mpa',
+    uploadExtensions: ['.mpa'],
+    edgeColor: '#ce93d8',
+    example: 's__seq\t1',
+  },
+  {
+    id: 'SEQID_ACCESSIONS',
+    validator: 'seqidAccessions',
+    defaultExtension: '.tsv',
+    uploadExtensions: ['.tsv'],
+    edgeColor: '#6a1b9a',
+    example: 'seq\tNC_000913',
+  },
+  {
+    id: 'NCBI_ACCESSION2TAXID',
+    validator: 'ncbiAccession2taxid',
+    defaultExtension: '.accession2taxid',
+    uploadExtensions: ['.accession2taxid'],
+    edgeColor: '#4a148c',
+    example: 'accession\taccession.version\ttaxid\tgi\nNC_000913\tNC_000913.3\t511145\t556503834',
   },
   {
     id: 'TEXT',
@@ -243,6 +299,14 @@ export const typeDefinitions = [
     defaultExtension: '.yak',
     uploadExtensions: ['.yak'],
     edgeColor: '#5d4037',
+    format: 'binary'
+  },
+  {
+    id: 'BGT',
+    validator: 'bgt',
+    defaultExtension: '.bgt',
+    uploadExtensions: ['.bgt', '.tar'],
+    edgeColor: '#4a148c',
     format: 'binary'
   },
   {
