@@ -16,6 +16,8 @@ const BINARY_MAGIC = {
   BIGWIG_BE: [0x88, 0x8f, 0xfc, 0x26],
   FMD:  [0x52, 0x4c, 0x44, 0x03],   // "RLD\x03" (ropebwt3 fermi-delta index)
   YAK:  [0x59, 0x41, 0x4b, 0x02],   // "YAK\x02" (yak k-mer hash table)
+  KALLISTO_INDEX: [0x0d, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00], // index version 13, little-endian
+  BUS:  [0x42, 0x55, 0x53, 0x00],   // "BUS\0" (kallisto bus)
 };
 
 function validateFasta(content) {
@@ -440,6 +442,35 @@ function validateBcf(content) {
   return validateBinWithMagic(content, BINARY_MAGIC.BCF) || validateBinWithMagic(content, BINARY_MAGIC.BGZF)
 }
 
+// kallisto's abundances: the header target_id, length, eff_length,
+// est_counts and tpm, then a row for each target
+function validateKallistoAbundance(content) {
+  if (typeof content !== 'string') return false;
+  const lines = content.split('\n').map(line => line.replace(/\r$/, '')).filter(line => line.trim());
+  if (!lines.length || lines[0] !== 'target_id\tlength\teff_length\test_counts\ttpm') return false;
+  const number = /^(?:-?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?|-?nan|-?inf)$/;
+  return lines.slice(1).every(line => {
+    const fields = line.split('\t');
+    return fields.length === 5 && fields[0] !== '' && /^[0-9]+$/.test(fields[1]) && fields.slice(2).every(f => number.test(f));
+  });
+}
+
+// kallisto bus's equivalence classes: each line a class's number, a tab,
+// and the comma-separated numbers of its transcripts
+function validateKallistoEc(content) {
+  if (typeof content !== 'string') return false;
+  const lines = content.split('\n').map(line => line.replace(/\r$/, '')).filter(line => line.trim());
+  return lines.length > 0 && lines.every(line => /^[0-9]+\t[0-9]+(?:,[0-9]+)*$/.test(line));
+}
+
+function validateKallistoIndex(content) {
+  return validateBinWithMagic(content, BINARY_MAGIC.KALLISTO_INDEX)
+}
+
+function validateBus(content) {
+  return validateBinWithMagic(content, BINARY_MAGIC.BUS)
+}
+
 function validateNewick(content) {
   if (typeof content !== 'string') return false;
   if (content.startsWith('\uFEFF')) content = content.slice(1);
@@ -572,6 +603,10 @@ const validators = {
   csi: validateCsi,
   bcf: validateBcf,
   newick: validateNewick,
+  kallistoIndex: validateKallistoIndex,
+  kallistoAbundance: validateKallistoAbundance,
+  kallistoEc: validateKallistoEc,
+  bus: validateBus,
   fai: validateFai,
   json: validateJson,
   text: () => true, // Default fallback for TEXT
