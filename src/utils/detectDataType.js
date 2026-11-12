@@ -306,6 +306,21 @@ function validateSnd(content) {
   return width !== null;
 }
 
+// gto_fasta_split_streams' headers channel: the text of each FASTA header after
+// its '>', one per line
+function validateGtoHeaders(content) {
+  if (!content || !content.replace(/\n/g, '')) return false;
+  return !content.includes('\x00') && !content.includes('\x01');
+}
+
+// gto_fasta_split_streams' extra channel: a '>' where each record starts, a 0x00
+// for each base in ACGT and a 0x01 for each in acgt, and every other character as
+// it was, so the bases themselves never appear in it
+function validateGtoExtra(content) {
+  if (!content) return false;
+  return (content.includes('\x00') || content.includes('\x01')) && !/[ACGTacgt]/.test(content);
+}
+
 function validateVcf(content) {
   if (!content) return false;
   const lines = content.trim().split(/\r?\n/);
@@ -564,6 +579,8 @@ const validators = {
   yak: validateYak,
   vcf: validateVcf,
   list: validateList,
+  gtoHeaders: validateGtoHeaders,
+  gtoExtra: validateGtoExtra,
   sam: validateSam,
   bam: validateBam,
   cram: validateCram,
@@ -582,6 +599,7 @@ const allTypes = getTypeDefinitions()
   .map(typeDef => ({
     type: typeDef.id,
     validator: validators[typeDef.validator],
+    onlyWhenExpected: !!typeDef.onlyWhenExpected,
   }))
   .filter(typeDef => typeDef.validator);
 
@@ -600,7 +618,8 @@ function matchType(dataValue, { allowed = [], returnAll = false }) {
     return returnAll ? [] : "UNKNOWN"
   }
 
-  for (const { type, validator } of allTypes) {
+  for (const { type, validator, onlyWhenExpected } of allTypes) {
+    if (onlyWhenExpected && !allowed.includes(type)) continue
     if (isTypeBinary(type) && dataValue.kind !== "binary") continue
     if (!isTypeBinary(type) && dataValue.kind === "binary") continue
 
