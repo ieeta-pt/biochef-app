@@ -10,6 +10,9 @@ import { detectDataType } from '../../utils/detectDataType';
 
 import ToolMessageIcons from '../ToolMessageIcons';
 
+const defaultNodeWidth = 150
+const portCharWidth = 5 // px, at the labels' font size of 8
+
 export const WorkflowNode = memo(({ id, data }) => {
   const { label, paramValues, outputs } = data;
 
@@ -62,6 +65,13 @@ export const WorkflowNode = memo(({ id, data }) => {
     updateNodeData(id, {toolMessages})
   }, [outputs]);
 
+  // Ports sit at even intervals, so a node needs room for its longest name in
+  // every interval, and one more for the two ends.
+  function widthForPorts(ports) {
+    if (ports.length < 2) return 0
+    return (ports.length + 1) * Math.max(...ports.map(port => port.name.length)) * portCharWidth
+  }
+
   function renderInputHandles() {
     return toolInputs.map((input, idx) => (
       <div
@@ -100,7 +110,13 @@ export const WorkflowNode = memo(({ id, data }) => {
 
   return (
 
-    <div className="react-flow__node-default" style={{ position: 'relative' }}>
+    <div
+      className="react-flow__node-default"
+      style={{
+        position: 'relative',
+        width: Math.max(defaultNodeWidth, widthForPorts(toolInputs), widthForPorts(toolOutputs)),
+      }}
+    >
       <Box display="flex" alignItems="center" justifyContent="center">
         <label>{label}</label>
       </Box>
