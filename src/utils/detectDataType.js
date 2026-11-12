@@ -1,9 +1,11 @@
+import pako from 'pako';
 import { isDataValue } from './dataValue';
 import logger from './logger';
 import { getTypeDefinitions, isTypeBinary } from './typeDefinitions';
 
 const BINARY_MAGIC = {
-  BGZF: [0x1f, 0x8b, 0x08, 0x04],   // gzip compressed
+  BGZF: [0x1f, 0x8b, 0x08, 0x04],   // gzip with an extra field, as BGZF writes it
+  TBI:  [0x54, 0x42, 0x49, 0x01],   // "TBI\x01" (tabix index, inside BGZF)
   BAM:  [0x42, 0x41, 0x4d, 0x01],   // "BAM\x01" (uncompressed)
   BCF:  [0x42, 0x43, 0x46, 0x02],   // "BCF\x02" (uncompressed)
   BAI:  [0x42, 0x41, 0x49, 0x01],   // "BAI\x01" (index for BAM)
@@ -328,11 +330,41 @@ function validateVcf(content) {
     const [, pos, , ref, alt, qual] = fields;
     if (!/^\d+$/.test(pos)) return false;
     if (!/^[ACGTN]+$/i.test(ref)) return false;
-    if (!alt.split(',').every(a => /^[ACGTN]+$/i.test(a))) return false;
-    if (qual !== '.' && !/^\d+(\.\d+)?$/.test(qual)) return false;
+    // Besides bases, VCF allows no ALT (.), a deletion placeholder (*),
+    // symbolic alleles such as <*> or <DEL>, and breakends such as G]2:42].
+    if (!alt.split(',').every(a => /^([ACGTN]+|[.*]|<[^<>]+>|[ACGTN.]*[[\]].*)$/i.test(a))) return false;
+    if (qual !== '.' && !/^\d+(\.\d+)?([eE][-+]?\d+)?$/.test(qual)) return false;
   }
 
   return headerFound;
+}
+
+// A gVCF is a VCF that also covers the reference stretches between its
+// variants, in blocks: a record whose ALT is only the "no variant here"
+// allele and whose END says where the block stops. GATK writes that allele
+// as <NON_REF>, DeepVariant as <*> and bcftools call -g as "."; GATK also
+// declares its block bands in ##GVCFBlock lines. A structural variant's END
+// (ALT <DEL> and the like) is not a block.
+function validateGvcf(content) {
+  if (!validateVcf(content)) return false;
+  for (const line of content.trim().split(/\r?\n/)) {
+    if (line.startsWith('##GVCFBlock')) return true;
+    if (line.startsWith('#')) continue;
+    const fields = line.split('\t');
+    if (fields.length >= 8 && ['.', '<*>', '<NON_REF>'].includes(fields[4])
+      && /(^|;)END=\d+(;|$)/.test(fields[7])) return true;
+  }
+  return false;
+}
+
+// Sample names, one per line, as bcftools query -l writes them and bcftools
+// view -S, vt subset -s and the like read them. A name cannot hold a tab,
+// which separates the columns of a VCF, and a line opening with '>', '@' or
+// '#' is a FASTA, FASTQ or VCF header, not a name.
+function validateSampleList(content) {
+  if (!content?.trim()) return false;
+  return content.trim().split(/\r?\n/).every(line =>
+    line.trim() && !line.includes('\t') && !'>@#'.includes(line[0]));
 }
 
 function validateList(content) {
@@ -400,8 +432,88 @@ function validateBinWithMagic(content, magic) {
   return true
 }
 
+// BGZF, the blocked gzip of htslib, compresses BAM, BCF, the CSI and tabix
+// indexes, and bgzipped VCF alike, so its gzip header says nothing about what
+// is inside: the type is in the first bytes of the inflated data. Plain gzip
+// (no BC extra field) is not BGZF and cannot be indexed, so it is not taken
+// as any of these.
+const BGZF_INFLATE_LIMIT = 1 << 20;
+
+// Inflates the BGZF blocks at the start of content, up to about limit bytes.
+// Returns { data, complete }, or null when content does not start with a
+// BGZF block.
+function bgzfInflate(content, limit = BGZF_INFLATE_LIMIT) {
+  if (!content || content.length < 18) return null;
+  const parts = [];
+  let size = 0;
+  let pos = 0;
+  while (pos < content.length) {
+    if (size >= limit) break;
+    if (content.length - pos < 12 || !BINARY_MAGIC.BGZF.every((b, i) => content[pos + i] === b)) break;
+    const xlen = content[pos + 10] | (content[pos + 11] << 8);
+    let bsize = null;
+    for (let i = pos + 12; i + 4 <= pos + 12 + xlen;) {
+      const slen = content[i + 2] | (content[i + 3] << 8);
+      if (content[i] === 0x42 && content[i + 1] === 0x43 && slen === 2) {
+        bsize = content[i + 4] | (content[i + 5] << 8);
+      }
+      i += 4 + slen;
+    }
+    const end = pos + (bsize ?? 0) + 1;
+    if (bsize === null || end > content.length) break;
+    let block;
+    try {
+      block = pako.inflateRaw(content.subarray(pos + 12 + xlen, end - 8));
+    } catch {
+      break;
+    }
+    parts.push(block);
+    size += block.length;
+    pos = end;
+  }
+  if (pos === 0) return null;
+  const data = new Uint8Array(size);
+  let offset = 0;
+  for (const part of parts) {
+    data.set(part, offset);
+    offset += part.length;
+  }
+  return { data, complete: pos === content.length };
+}
+
+function validateBgzfWithMagic(content, magic) {
+  const inflated = bgzfInflate(content, magic.length);
+  return !!inflated && validateBinWithMagic(inflated.data, magic);
+}
+
+function validateBgzfText(content, textValidator) {
+  const inflated = bgzfInflate(content);
+  if (!inflated || !inflated.data.length) return false;
+  let text = new TextDecoder('utf-8').decode(inflated.data);
+  if (!inflated.complete) text = text.slice(0, text.lastIndexOf('\n') + 1);
+  return textValidator(text);
+}
+
 function validateBam(content) {
-  return validateBinWithMagic(content, BINARY_MAGIC.BAM) || validateBinWithMagic(content, BINARY_MAGIC.BGZF)
+  return validateBinWithMagic(content, BINARY_MAGIC.BAM) || validateBgzfWithMagic(content, BINARY_MAGIC.BAM)
+}
+
+function validateTbi(content) {
+  return validateBgzfWithMagic(content, BINARY_MAGIC.TBI)
+}
+
+function validateVcfGz(content) {
+  return validateBgzfText(content, validateVcf)
+}
+
+function validateGvcfGz(content) {
+  return validateBgzfText(content, validateGvcf)
+}
+
+// Any other BGZF file, such as a bgzipped BED, GFF or SAM. It comes after the
+// specific BGZF types, so that it only takes what they do not.
+function validateBgzf(content) {
+  return bgzfInflate(content, 1) !== null
 }
 
 function validateCram(content) {
@@ -433,11 +545,11 @@ function validateMmi(content) {
 }
 
 function validateCsi(content) {
-  return validateBinWithMagic(content, BINARY_MAGIC.CSI) || validateBinWithMagic(content, BINARY_MAGIC.BGZF)
+  return validateBinWithMagic(content, BINARY_MAGIC.CSI) || validateBgzfWithMagic(content, BINARY_MAGIC.CSI)
 }
 
 function validateBcf(content) {
-  return validateBinWithMagic(content, BINARY_MAGIC.BCF) || validateBinWithMagic(content, BINARY_MAGIC.BGZF)
+  return validateBinWithMagic(content, BINARY_MAGIC.BCF) || validateBgzfWithMagic(content, BINARY_MAGIC.BCF)
 }
 
 function validateNewick(content) {
@@ -563,7 +675,13 @@ const validators = {
   fmd: validateFmd,
   yak: validateYak,
   vcf: validateVcf,
+  gvcf: validateGvcf,
+  vcfGz: validateVcfGz,
+  gvcfGz: validateGvcfGz,
+  tbi: validateTbi,
+  bgzf: validateBgzf,
   list: validateList,
+  sampleList: validateSampleList,
   sam: validateSam,
   bam: validateBam,
   cram: validateCram,
@@ -582,6 +700,7 @@ const allTypes = getTypeDefinitions()
   .map(typeDef => ({
     type: typeDef.id,
     validator: validators[typeDef.validator],
+    onlyWhenExpected: !!typeDef.onlyWhenExpected,
   }))
   .filter(typeDef => typeDef.validator);
 
@@ -600,7 +719,8 @@ function matchType(dataValue, { allowed = [], returnAll = false }) {
     return returnAll ? [] : "UNKNOWN"
   }
 
-  for (const { type, validator } of allTypes) {
+  for (const { type, validator, onlyWhenExpected } of allTypes) {
+    if (onlyWhenExpected && !allowed.includes(type)) continue
     if (isTypeBinary(type) && dataValue.kind !== "binary") continue
     if (!isTypeBinary(type) && dataValue.kind === "binary") continue
 
@@ -625,6 +745,9 @@ function matchType(dataValue, { allowed = [], returnAll = false }) {
 
 export function detectIsBinaryFile(bytes) {
   if (!bytes || !bytes.length) return false;
+
+  // Any gzip, BGZF or not, is binary
+  if (bytes.length >= 2 && bytes[0] === 0x1f && bytes[1] === 0x8b) return true;
 
   for (const magic of Object.values(BINARY_MAGIC)) {
     if (bytes.length < magic.length) continue;
