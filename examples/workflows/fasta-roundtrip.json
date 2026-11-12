@@ -1,0 +1,179 @@
+{
+  "nodes": [
+    {
+      "id": "in",
+      "type": "inputWorkflowNode",
+      "position": {
+        "x": 50,
+        "y": 120
+      },
+      "data": {
+        "label": "Input",
+        "outputs": {
+          "out": {
+            "kind": "text",
+            "data": ">test_sequence\nATGCGTACGTAGCTGACTGATCGATCGTAGCTAGCGTAGCTGCATCGATCGGTAGCTAGCGTACGTAGCTAGCTGATCGTAGCTAGCTAGCTAGCTGAT\n"
+          }
+        },
+        "output": {},
+        "toolMessages": {},
+        "runCalled": false,
+        "isRunning": false
+      }
+    },
+    {
+      "id": "o-stats",
+      "type": "outputWorkflowNode",
+      "position": {
+        "x": 313.99999999999994,
+        "y": 612
+      },
+      "data": {
+        "label": "Output",
+        "output": {},
+        "outputs": {},
+        "toolMessages": {},
+        "runCalled": false,
+        "isRunning": false
+      }
+    },
+    {
+      "id": "o-seq",
+      "type": "outputWorkflowNode",
+      "position": {
+        "x": 47.09754764509378,
+        "y": 560.5966546249824
+      },
+      "data": {
+        "label": "Output",
+        "output": {},
+        "outputs": {},
+        "toolMessages": {},
+        "runCalled": false,
+        "isRunning": false
+      }
+    },
+    {
+      "id": "output-1779025202399",
+      "type": "outputWorkflowNode",
+      "data": {
+        "label": "Output",
+        "output": {},
+        "outputs": {},
+        "toolMessages": {},
+        "runCalled": false,
+        "isRunning": false
+      },
+      "position": {
+        "x": 283.00000000000006,
+        "y": 348
+      }
+    },
+    {
+      "id": "gto.fasta.reverse-1779037854901",
+      "type": "workflowNode",
+      "data": {
+        "label": "Fasta Reverse (GTO)",
+        "outputs": {},
+        "output": {},
+        "repo": "biochef-plugins-gto.fasta.reverse",
+        "paramValues": {},
+        "toolMessages": {},
+        "isRunning": false,
+        "runCalled": false
+      },
+      "position": {
+        "x": 84.99222509159789,
+        "y": 249.5723188797637
+      }
+    },
+    {
+      "id": "gto.fasta.complement-1779037861392",
+      "type": "workflowNode",
+      "data": {
+        "label": "Fasta Complement (GTO)",
+        "outputs": {},
+        "output": {},
+        "repo": "biochef-plugins-gto.fasta.complement",
+        "paramValues": {},
+        "toolMessages": {},
+        "isRunning": false,
+        "runCalled": false
+      },
+      "position": {
+        "x": 64.5800937881658,
+        "y": 359.4615111455036
+      }
+    },
+    {
+      "id": "gto.fasta.info-1779037868982",
+      "type": "workflowNode",
+      "data": {
+        "label": "Fasta Info (GTO)",
+        "outputs": {},
+        "output": {},
+        "repo": "biochef-plugins-gto.fasta.info",
+        "paramValues": {},
+        "toolMessages": {},
+        "isRunning": false,
+        "runCalled": false
+      },
+      "position": {
+        "x": 238.812214556747,
+        "y": 475.1827409265098
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "in",
+      "sourceHandle": "out",
+      "target": "gto.fasta.reverse-1779037854901",
+      "targetHandle": "in",
+      "type": "workflowEdge",
+      "id": "xy-edge__inout-gto.fasta.reverse-1779037854901in"
+    },
+    {
+      "source": "gto.fasta.reverse-1779037854901",
+      "sourceHandle": "out",
+      "target": "gto.fasta.complement-1779037861392",
+      "targetHandle": "in",
+      "type": "workflowEdge",
+      "id": "xy-edge__gto.fasta.reverse-1779037854901out-gto.fasta.complement-1779037861392in"
+    },
+    {
+      "source": "gto.fasta.complement-1779037861392",
+      "sourceHandle": "out",
+      "target": "o-seq",
+      "type": "workflowEdge",
+      "id": "xy-edge__gto.fasta.complement-1779037861392out-o-seq"
+    },
+    {
+      "source": "gto.fasta.complement-1779037861392",
+      "sourceHandle": "out",
+      "target": "gto.fasta.info-1779037868982",
+      "targetHandle": "in",
+      "type": "workflowEdge",
+      "id": "xy-edge__gto.fasta.complement-1779037861392out-gto.fasta.info-1779037868982in"
+    },
+    {
+      "source": "gto.fasta.info-1779037868982",
+      "sourceHandle": "out",
+      "target": "o-stats",
+      "type": "workflowEdge",
+      "id": "xy-edge__gto.fasta.info-1779037868982out-o-stats"
+    },
+    {
+      "source": "gto.fasta.reverse-1779037854901",
+      "sourceHandle": "out",
+      "target": "output-1779025202399",
+      "type": "workflowEdge",
+      "id": "xy-edge__gto.fasta.reverse-1779037854901out-output-1779025202399"
+    }
+  ],
+  "viewport": {
+    "x": 229.28724100411648,
+    "y": 20.06409345853615,
+    "zoom": 1.1712101812188096
+  }
+}
