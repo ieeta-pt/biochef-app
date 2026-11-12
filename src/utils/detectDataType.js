@@ -122,7 +122,7 @@ function validateBed(content) {
 }
 
 function validateGff(content) {
-  if (!content) return false;
+  if (!content?.trim()) return false;
   const lines = content.trim().split('\n');
   return lines.every(line => {
     if (!line.trim() || line.startsWith('#')) return true;
