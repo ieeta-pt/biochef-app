@@ -4,13 +4,13 @@ import { isTypeBinary } from "./typeDefinitions";
 import { makeReferenceDataValue } from "./dataValue";
 import { putBlob } from "./blobStore"
 
-function sanitizeWorkflowNodes(nodes, { keepBinaryAsReference = false } = {}) {
+function sanitizeWorkflowNodes(nodes, { keepText = true, keepBinaryAsReference = false } = {}) {
   return nodes.map(node => {
     const outputs = {};
 
     if (node.type === "inputWorkflowNode") {
       for (const [key, value] of Object.entries(node.data.outputs || {})) {
-        if (value?.kind === "text") {
+        if (value?.kind === "text" && keepText) {
           outputs[key] = value;
         }
         else if (value?.kind === "binary" && keepBinaryAsReference) {
@@ -41,10 +41,20 @@ export function prepareWorkflowNodesForLocalStorage(nodes) {
   });
 }
 
-export function prepareWorkflowNodesForExport(nodes) {
+// Input data stays out of an exported file unless the user asks for it:
+// the file is meant to be shared, and the data may be private.
+export function prepareWorkflowNodesForExport(nodes, { includeData = false } = {}) {
   return sanitizeWorkflowNodes(nodes, {
+    keepText: includeData,
     keepBinaryAsReference: false
   });
+}
+
+export function workflowHasInputData(nodes) {
+  return nodes.some(node =>
+    node.type === "inputWorkflowNode" &&
+    Object.values(node.data.outputs || {}).some(value => value?.kind === "text")
+  );
 }
 
 export function isValidConnection(sourceTypes, targetTypes) {
