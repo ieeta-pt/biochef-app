@@ -482,6 +482,7 @@ export async function runTools(
 
   let outputs = {}
   let errors = {}
+  const failed = new Map() // uniqueId -> tool name, for what failed or was skipped
 
   // Each invocation gets an Aioli instance of its own, so a fresh Web Worker and
   // a fresh module: a tool runs as it would in a new process. Reusing one
@@ -493,6 +494,18 @@ export async function runTools(
   const toolBlobs = {}
 
   for (const invocation of toolInvocations) {
+    // Running on the "" a failed step left behind buries the real failure under
+    // the errors of the steps after it.
+    const failedSource = Object.values(invocation.inputs)
+      .find(({ mode, value }) => mode === "output" && failed.has(value[0]))
+    if (failedSource) {
+      const sourceName = failed.get(failedSource.value[0])
+      failed.set(invocation.uniqueId, sourceName)
+      errors[invocation.uniqueId] = [`Skipped: ${sourceName} failed`]
+      onToolFinished(invocation.uniqueId, {}, errors[invocation.uniqueId])
+      continue
+    }
+
     toolBlobs[invocation.toolName] ??= await getToolBlobs(invocation.toolName)
     const { scriptUrl, runtimeFiles } = toolBlobs[invocation.toolName]
     const CLI = await new Aioli([{
@@ -617,6 +630,13 @@ export async function runTools(
       } catch (err) {
         logger.warn("[runMultipleTools] Failed to close the Aioli worker", err)
       }
+    }
+
+    const hasOutput = Object.values(outputs[invocation.uniqueId] ?? {}).some(
+      value => value !== undefined && value !== null && value.data !== ''
+    )
+    if (errors[invocation.uniqueId].join("") && !hasOutput) {
+      failed.set(invocation.uniqueId, invocation.toolName)
     }
 
     // call the callback function after invocation is done
