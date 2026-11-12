@@ -345,6 +345,27 @@ function validateList(content) {
   });
 }
 
+// psmc's result: lines tagged with two capital letters (CC, MM, RD, RS,
+// PA...), with // after each round.
+function validatePsmc(content) {
+  if (!content || !content.trim()) return false;
+
+  const lines = content.trim().split(/\r?\n/);
+  if (!lines[0].startsWith('CC')) return false;
+  if (!lines.every(line => line === '//' || /^[A-Z]{2}(\t.*)?$/.test(line))) return false;
+  return lines.some(line => line.startsWith('RD\t'));
+}
+
+// psmc's parameters (-i), as on a PA line of its result: the pattern, then
+// numbers.
+function validatePsmcParams(content) {
+  if (!content) return false;
+
+  const fields = content.trim().split(/\s+/);
+  if (fields.length < 5 || !/^\d+(\*\d+)?(\+\d+(\*\d+)?)*$/.test(fields[0])) return false;
+  return fields.slice(1).every(field => /^[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?$/.test(field));
+}
+
 function validateSam(content) {
   if (!content) {
     return false;
@@ -422,6 +443,30 @@ function validateFmd(content) {
 
 function validateYak(content) {
   return validateBinWithMagic(content, BINARY_MAGIC.YAK)
+}
+
+function readInt32(content, offset) {
+  return content[offset] | content[offset + 1] << 8 | content[offset + 2] << 16 | content[offset + 3] << 24;
+}
+
+// psmc's CpG counts (cntcpg) have no magic number: a little-endian int32
+// with the number of counts per bin, then, for each sequence, an int32 with
+// its number of bins followed by that many bins of counts. They are
+// recognised by that layout ending exactly at the end of the file.
+function validatePsmcCpg(content) {
+  if (!content || content.length < 8) return false;
+
+  const nCounts = readInt32(content, 0);
+  if (nCounts < 1 || nCounts > 64) return false;
+
+  let offset = 4;
+  while (offset < content.length) {
+    if (offset + 4 > content.length) return false;
+    const bins = readInt32(content, offset);
+    if (bins < 0) return false;
+    offset += 4 + 4 * nCounts * bins;
+  }
+  return offset === content.length;
 }
 
 function validateBai(content) {
@@ -562,7 +607,10 @@ const validators = {
   bigwig: validateBigWig,
   fmd: validateFmd,
   yak: validateYak,
+  psmcCpg: validatePsmcCpg,
   vcf: validateVcf,
+  psmc: validatePsmc,
+  psmcParams: validatePsmcParams,
   list: validateList,
   sam: validateSam,
   bam: validateBam,
@@ -625,6 +673,8 @@ function matchType(dataValue, { allowed = [], returnAll = false }) {
 
 export function detectIsBinaryFile(bytes) {
   if (!bytes || !bytes.length) return false;
+
+  if (validatePsmcCpg(bytes)) return true;
 
   for (const magic of Object.values(BINARY_MAGIC)) {
     if (bytes.length < magic.length) continue;
