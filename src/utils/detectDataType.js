@@ -345,6 +345,29 @@ function validateList(content) {
   });
 }
 
+// bgt's Flat Metadata Format: per line a name, then tab-separated
+// key:type:value fields, type Z (text), f (number) or i (integer). A file
+// without any field is a plain list of names.
+function validateFmf(content) {
+  if (!content || !content.trim()) return false;
+
+  let hasField = false;
+  for (const line of content.trim().split('\n')) {
+    const [name, ...fields] = line.replace(/\r$/, '').split('\t');
+    if (!name) return false;
+
+    for (const field of fields) {
+      const match = /^([^:]+):([Zfi]):(.*)$/.exec(field);
+      if (!match) return false;
+      const [, , kind, value] = match;
+      if (kind === 'i' && !/^[+-]?\d+$/.test(value)) return false;
+      if (kind === 'f' && !/^[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?$/.test(value)) return false;
+      hasField = true;
+    }
+  }
+  return hasField;
+}
+
 function validateSam(content) {
   if (!content) {
     return false;
@@ -398,6 +421,63 @@ function validateBinWithMagic(content, magic) {
   }
 
   return true
+}
+
+// A tar (POSIX ustar): 512-byte headers with "ustar" at offset 257, each
+// followed by its file padded to 512 bytes, ended by an empty block.
+// Returns the names of its files, or null when it is not a well-formed tar.
+// Extended headers (pax) and the ._ files macOS adds are left out; a pax
+// header that renames or resizes a file makes it not a plain tar.
+function tarMembers(content) {
+  if (!content || content.length < 512) return null;
+
+  const text = (start, length) => {
+    let end = start;
+    while (end < start + length && content[end]) end++;
+    return String.fromCharCode(...content.subarray(start, end));
+  };
+  const octal = (start, length) => {
+    const field = text(start, length).trim();
+    return /^[0-7]+$/.test(field) ? parseInt(field, 8) : NaN;
+  };
+
+  const names = [];
+  let offset = 0;
+  while (offset + 512 <= content.length) {
+    const header = content.subarray(offset, offset + 512);
+    if (header.every(byte => byte === 0)) return names;
+    if (text(offset + 257, 5) !== 'ustar') return null;
+
+    let sum = 0;
+    for (let i = 0; i < 512; i++) sum += i >= 148 && i < 156 ? 32 : header[i];
+    if (octal(offset + 148, 8) !== sum) return null;
+
+    const size = octal(offset + 124, 12);
+    if (Number.isNaN(size) || offset + 512 + size > content.length) return null;
+
+    const type = String.fromCharCode(header[156]);
+    if (type === '0' || header[156] === 0) {
+      const name = text(offset, 100);
+      if (header[345] || !name.startsWith('._')) names.push(header[345] ? text(offset + 345, 155) + '/' + name : name);
+    } else if (type === 'x' || type === 'g') {
+      const records = String.fromCharCode(...content.subarray(offset + 512, offset + 512 + size));
+      if (/(^|\n)\d+ (path|linkpath|size|GNU\.sparse[^=]*)=/.test(records)) return null;
+    } else {
+      return null;
+    }
+    offset += 512 + Math.ceil(size / 512) * 512;
+  }
+  return null;
+}
+
+// A BGT database (bgt): a tar holding exactly the four files bgt import
+// writes, named as BioChef's bgt operations name them.
+const BGT_MEMBERS = ['bgt.bcf', 'bgt.bcf.csi', 'bgt.pbf', 'bgt.spl'];
+
+function validateBgt(content) {
+  const names = tarMembers(content);
+  return !!names && names.length === BGT_MEMBERS.length
+    && BGT_MEMBERS.every(member => names.includes(member));
 }
 
 function validateBam(content) {
@@ -562,7 +642,9 @@ const validators = {
   bigwig: validateBigWig,
   fmd: validateFmd,
   yak: validateYak,
+  bgt: validateBgt,
   vcf: validateVcf,
+  fmf: validateFmf,
   list: validateList,
   sam: validateSam,
   bam: validateBam,
@@ -625,6 +707,9 @@ function matchType(dataValue, { allowed = [], returnAll = false }) {
 
 export function detectIsBinaryFile(bytes) {
   if (!bytes || !bytes.length) return false;
+
+  // A tar, even one cut short: "ustar" in its first header
+  if (bytes.length >= 262 && String.fromCharCode(...bytes.subarray(257, 262)) === 'ustar') return true;
 
   for (const magic of Object.values(BINARY_MAGIC)) {
     if (bytes.length < magic.length) continue;
