@@ -35,7 +35,7 @@ module.exports = {
       },
       {
         test: /\.svg$/,
-        use: ['@svgr/webpack'],
+        type: 'asset/inline',
       },
       {
         test: /\.m?js/,

@@ -64,8 +64,10 @@ const Navbar = () => {
         >
             <Toolbar>
                 {/* Logo */}
-                <BioChefLogo
-                    style={{ maxWidth: '75px', marginRight: '15px', cursor: 'pointer' }}
+                <img
+                    src={BioChefLogo}
+                    alt="BioChef"
+                    style={{ width: '75px', marginRight: '15px', cursor: 'pointer' }}
                     onClick={() => navigate('/about')}
                 />
 
